@@ -25,11 +25,22 @@
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 0;
-    background: var(--cream);
+    background: linear-gradient(180deg, var(--amber-soft) 0%, var(--cream-deep) 220px, var(--cream) 420px);
+    background-attachment: fixed;
     color: var(--ink);
     font-family: 'Inter', -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
+
+  .hero-card {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .hero-card svg { display:block; width:100%; height:auto; }
   h1, h2, h3, .display { font-family: 'Fraunces', serif; }
   .wrap { max-width: 480px; margin: 0 auto; padding: 18px 16px 60px; }
   .topbar {
@@ -37,13 +48,19 @@
     margin-bottom: 16px;
   }
   .brand { display:flex; align-items:center; gap:10px; }
-  .brand .icon { font-size: 26px; }
+  .brand .icon {
+    font-size: 22px; width: 40px; height: 40px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(145deg, var(--amber-soft), var(--amber));
+    box-shadow: 0 3px 8px rgba(232,163,61,0.35);
+  }
   .brand .name { font-size: 12px; letter-spacing:.06em; text-transform:uppercase; color: var(--muted); }
   .brand .title { font-size: 17px; font-weight:700; color: var(--teal-deep); line-height:1.15; }
   .streak {
-    display:flex; align-items:center; gap:5px; background: var(--paper);
-    border:1px solid var(--line); border-radius:20px; padding:6px 12px;
-    font-size:13px; font-weight:600; color: var(--terracotta); box-shadow: var(--shadow);
+    display:flex; align-items:center; gap:5px;
+    background: linear-gradient(145deg, #FFFDF8, var(--amber-soft));
+    border:1px solid var(--amber); border-radius:20px; padding:6px 12px;
+    font-size:13px; font-weight:700; color: var(--terracotta); box-shadow: var(--shadow);
   }
   .familyNameRow { text-align:center; margin-bottom: 18px; }
   .familyNameRow input {
@@ -76,9 +93,13 @@
   .map-week.done .dot { background: var(--good); border-color: var(--good); color:#fff; }
   .map-week.current .dot { background: var(--amber); border-color: var(--amber); color:#fff; box-shadow: 0 0 0 5px rgba(232,163,61,0.25); }
   .map-week.locked .dot { background: var(--cream-deep); }
+  .map-week.scheduled .dot { background: var(--cream-deep); font-size: 12px; }
+  .map-week.scheduled { opacity: .65; pointer-events: none; }
+  .map-week.ready .dot { background: var(--paper); border-color: var(--amber); color: var(--amber); }
   .map-week .label { font-weight:600; font-size: 14.5px; }
   .map-week.locked .label { color: var(--muted); }
   .map-week .sub { font-size: 12px; color: var(--muted); margin-top:1px; }
+  .map-week.ready .sub { color: var(--terracotta); font-weight:600; }
   .map-week .badge-emoji { font-size: 18px; margin-left: 4px; }
   .map-week.locked { opacity: .65; pointer-events: none; }
 
@@ -88,7 +109,7 @@
     font-weight:700; cursor:pointer; font-family:'Inter',sans-serif;
   }
   .cta-btn.secondary { background: var(--paper); color: var(--teal); border: 1.5px solid var(--teal); }
-  .cta-btn.amber { background: var(--amber); }
+  .cta-btn.amber { background: linear-gradient(135deg, #F0B45C, var(--amber)); box-shadow: 0 4px 12px rgba(232,163,61,0.35); }
   .cta-btn:disabled { opacity: .5; cursor: not-allowed; }
   .cta-btn.small { padding: 9px; font-size: 13px; }
 
@@ -147,6 +168,13 @@
   .check-row { display:flex; align-items:center; gap:10px; margin-top: 8px; }
   .check-row input[type=checkbox] { width: 20px; height:20px; accent-color: var(--good); }
   .check-row label { font-size: 13.5px; font-weight:600; }
+
+  .member-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); }
+  .member-row:last-child { border-bottom:none; }
+  .member-row .mname { font-size: 13.5px; font-weight:600; }
+  .member-row .rm-btn { background:none; border:none; color: var(--terracotta); font-size: 12px; cursor:pointer; text-decoration:underline; }
+  .add-member-row { display:flex; gap:8px; margin-top: 12px; }
+  .add-member-row input { flex:1; }
 
   textarea, input[type=text] {
     width:100%; border:1px solid var(--line); border-radius: 10px; padding: 10px 12px;
@@ -225,6 +253,61 @@
 
   <!-- ============ HOME: MAPA DE LA AVENTURA ============ -->
   <div id="screenHome">
+    <div class="hero-card">
+      <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Familia caminando hacia la capilla al amanecer">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F6D9A6"/>
+            <stop offset="55%" stop-color="#FBEBD3"/>
+            <stop offset="100%" stop-color="#FFFDF8"/>
+          </linearGradient>
+          <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFE9BC" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#FFE9BC" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="hillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E8C989"/>
+            <stop offset="100%" stop-color="#CE9F58"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="400" height="150" fill="url(#skyGrad)"/>
+        <circle cx="322" cy="40" r="50" fill="url(#sunGlow)"/>
+        <circle cx="322" cy="40" r="16" fill="#F3C568"/>
+        <!-- templo (silueta original, inspirada en arquitectura clásica de templo) -->
+        <g fill="#7A5C3A" opacity="0.88">
+          <!-- base / escalinata -->
+          <rect x="120" y="93" width="110" height="8"/>
+          <!-- cuerpo principal con frontón -->
+          <rect x="131" y="68" width="88" height="26"/>
+          <polygon points="127,68 175,47 223,68"/>
+          <!-- columnas -->
+          <rect x="139" y="71" width="6" height="22"/>
+          <rect x="154" y="71" width="6" height="22"/>
+          <rect x="169" y="71" width="6" height="22"/>
+          <rect x="184" y="71" width="6" height="22"/>
+          <rect x="199" y="71" width="6" height="22"/>
+          <!-- torre central -->
+          <rect x="163" y="30" width="24" height="40"/>
+          <polygon points="159,30 175,8 191,30"/>
+          <!-- remate -->
+          <rect x="173" y="2" width="4" height="7"/>
+          <circle cx="175" cy="2" r="2.6"/>
+        </g>
+        <!-- camino y colina -->
+        <path d="M0,140 Q140,112 205,120 T400,104 L400,150 L0,150 Z" fill="url(#hillGrad)"/>
+        <path d="M35,150 Q140,120 205,126 T400,110" fill="none" stroke="#FFFDF8" stroke-width="11" stroke-linecap="round" opacity="0.55"/>
+        <!-- familia caminando -->
+        <g fill="#2B2519">
+          <circle cx="78" cy="120" r="7.5"/>
+          <path d="M70,128 q8,-7 16,0 l3,22 q-11,4.5 -22,0 z"/>
+          <circle cx="97" cy="128" r="5.8"/>
+          <path d="M92,134 q5.4,-5.4 10.8,0 l2.2,15 q-7.6,3.2 -15.2,0 z"/>
+          <circle cx="112" cy="131" r="5.2"/>
+          <path d="M108,136 q4.8,-4.8 9.6,0 l2,13 q-6.8,3 -13.6,0 z"/>
+        </g>
+      </svg>
+    </div>
+
     <div class="demo-flag" id="demoFlag">✨ Semana de ejemplo cargada — reemplázala por el contenido real de Ven, Sígueme cuando quieras.</div>
 
     <div class="card">
@@ -234,6 +317,9 @@
 
     <div class="journal-link">
       <button id="openJournalBtn">📖 Ver el Diario Familiar</button>
+    </div>
+    <div class="journal-link">
+      <button id="openAdminBtn">🛡️ Panel del administrador</button>
     </div>
   </div>
 
@@ -247,6 +333,12 @@
       <div class="kicker" id="weekKicker">Semana 1</div>
       <h1 id="weekTitle">—</h1>
       <p class="principio" id="weekPrincipio">—</p>
+    </div>
+
+    <div id="activationGate" class="card" hidden>
+      <div class="section-title">Activación familiar</div>
+      <p style="font-size:13.5px; line-height:1.5; margin:0 0 12px;">Esta semana ya está lista para empezar. Cuando el papá o la mamá diga que arrancamos la Noche de Hogar, tocá el botón para activarla — recién ahí se abre el contenido para toda la familia.</p>
+      <button class="cta-btn amber" id="activateWeekBtn">Activar esta semana para la familia →</button>
     </div>
 
     <div class="dayTabs" id="dayTabs"></div>
@@ -306,6 +398,11 @@
       <div class="card">
         <div class="section-title">Desafío individual (elige el tuyo)</div>
         <div class="option-list" id="individualOptions"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">¿Quién ya cumplió su desafío esta semana?</div>
+        <div id="memberChecklist"></div>
       </div>
 
       <div class="card">
@@ -371,6 +468,47 @@
     <div class="card" id="journalList"></div>
   </div>
 
+  <!-- ============ PANEL DEL ADMINISTRADOR ============ -->
+  <div id="screenAdmin" hidden>
+    <div class="backRow">
+      <button class="backBtn" id="backFromAdminBtn">← Mapa</button>
+    </div>
+    <div class="weekHeader" style="margin-bottom:10px;">
+      <h1 style="margin-bottom:2px;">🛡️ Panel del administrador</h1>
+      <p class="principio">Para el papá o la mamá — seguimiento de la familia.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Integrantes de la familia</div>
+      <div id="membersList"></div>
+      <div class="add-member-row">
+        <input type="text" id="newMemberInput" placeholder="Nombre" maxlength="30">
+        <button class="cta-btn small" id="addMemberBtn" style="flex:0 0 auto; padding:9px 14px;">Agregar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Semana actual — resumen</div>
+      <div id="adminWeekSummary"></div>
+    </div>
+  </div>
+
+  <!-- ============ CLAVE DE ACTIVACIÓN (overlay, independiente de la pantalla activa) ============ -->
+  <div id="pinCard" class="card" hidden>
+    <div class="section-title" id="pinCardTitle">Clave de activación</div>
+    <p id="pinCardText" style="font-size:13px; line-height:1.5; color:var(--muted); margin:0 0 12px;"></p>
+    <input type="text" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••"
+      style="text-align:center; font-size:22px; letter-spacing:10px; max-width:140px; margin:0 auto 10px; display:block;">
+    <input type="text" id="pinConfirmInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="repetí el PIN"
+      style="text-align:center; font-size:15px; letter-spacing:5px; max-width:150px; margin:0 auto 10px; display:none;">
+    <div id="pinError" style="color:var(--terracotta); font-size:12.5px; text-align:center; margin-bottom:8px; display:none;"></div>
+    <button type="button" class="cta-btn small" id="pinConfirmBtn">Confirmar</button>
+    <button type="button" class="cta-btn secondary small" id="pinCancelBtn" style="margin-top:8px;">Cancelar</button>
+    <div id="forgotPinRow" style="text-align:center; margin-top:10px; display:none;">
+      <button type="button" id="forgotPinBtn" style="background:none;border:none;color:var(--muted);font-size:11.5px;text-decoration:underline;cursor:pointer;">¿Olvidaste el PIN? Reiniciarlo</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -387,6 +525,7 @@ const WEEKS = [
   {
     id: 'semana-1-enderezara-tus-veredas',
     isDemo: false,
+    fechaInicio: '2026-09-13', // no se puede activar antes de esta fecha
     tema: 'Él enderezará tus veredas',
     principio: 'Cuando confiamos en Jehová con todo el corazón —en nuestras decisiones, en nuestras palabras, en los tiempos de la vida y en el carácter que construimos— Él endereza nuestro camino.',
     escrituras: [
@@ -430,7 +569,9 @@ function defaultState() {
   return {
     familyName: '',
     currentWeekIndex: 0,
-    progress: {}, // weekId -> { mondayDone, dailyChecks:{mar,mie,jue,vie}, closing:{emoji,note,photo,closedAt}, badgeAwarded }
+    adminPin: '', // PIN de 4 dígitos que el papá/mamá crea la primera vez; sin esto nadie puede activar una semana
+    members: [], // { id, nombre } — integrantes de la familia, para el seguimiento individual
+    progress: {}, // weekId -> { activated, mondayDone, dailyChecks:{mar,mie,jue,vie}, individualChecks:{memberId:bool}, closing:{emoji,note,photo,closedAt}, badgeAwarded }
   };
 }
 
@@ -458,8 +599,9 @@ let state = loadState();
 
 function weekProgress(weekId) {
   if (!state.progress[weekId]) {
-    state.progress[weekId] = { mondayDone: false, dailyChecks: {}, closing: null, badgeAwarded: false };
+    state.progress[weekId] = { activated: false, mondayDone: false, dailyChecks: {}, individualChecks: {}, closing: null, badgeAwarded: false };
   }
+  if (!state.progress[weekId].individualChecks) state.progress[weekId].individualChecks = {};
   return state.progress[weekId];
 }
 
@@ -471,6 +613,7 @@ const screens = {
   week: document.getElementById('screenWeek'),
   badge: document.getElementById('screenBadge'),
   journal: document.getElementById('screenJournal'),
+  admin: document.getElementById('screenAdmin'),
 };
 function showScreen(name) {
   Object.values(screens).forEach(el => el.hidden = true);
@@ -503,15 +646,36 @@ document.getElementById('familyNameInput').addEventListener('input', (e) => {
 /* ============================================================
    RENDER: MAPA DE LA AVENTURA (HOME)
    ============================================================ */
+/* ---- Fecha de inicio de cada semana: nada se puede ver ni activar antes ---- */
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function dateReached(dateStr) {
+  if (!dateStr) return true; // sin fecha configurada = sin restricción
+  const start = parseLocalDate(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return today >= start;
+}
+function formatDateEs(dateStr) {
+  return parseLocalDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+}
+
 function weekStatus(index) {
   const w = WEEKS[index];
   const p = state.progress[w.id];
   if (p && p.closing) return 'done';
-  if (index === 0) return 'current';
-  const prevW = WEEKS[index - 1];
-  const prevP = state.progress[prevW.id];
-  if (prevP && prevP.closing) return 'current';
-  return 'locked';
+  let prevOk = true;
+  if (index > 0) {
+    const prevW = WEEKS[index - 1];
+    const prevP = state.progress[prevW.id];
+    prevOk = !!(prevP && prevP.closing);
+  }
+  if (!prevOk) return 'locked';
+  if (!dateReached(w.fechaInicio)) return 'scheduled'; // todavía no llega el domingo de esta semana
+  if (p && p.activated) return 'current';
+  return 'ready'; // se puede activar, pero el papá/mamá todavía no lo hizo
 }
 
 function renderMap() {
@@ -521,15 +685,23 @@ function renderMap() {
     const status = weekStatus(i);
     const div = document.createElement('div');
     div.className = 'map-week ' + status;
-    const dot = status === 'done' ? '✓' : (i + 1);
+    let dot = (i + 1);
+    if (status === 'done') dot = '✓';
+    else if (status === 'ready') dot = '▶';
+    else if (status === 'scheduled') dot = '📅';
+    let subText = 'Semana en curso — ¡vamos!';
+    if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
+    else if (status === 'scheduled') subText = 'Disponible desde el ' + formatDateEs(w.fechaInicio);
+    else if (status === 'done') subText = w.insignia.nombre;
+    else if (status === 'ready') subText = 'Lista — el papá o la mamá la activa';
     div.innerHTML =
       '<div class="dot">' + dot + '</div>' +
       '<div class="label">Semana ' + (i + 1) + ' · ' + escapeHtml(w.tema) +
         (status === 'done' ? '<span class="badge-emoji">' + w.insignia.emoji + '</span>' : '') +
       '</div>' +
-      '<div class="sub">' + (status === 'locked' ? 'Se desbloquea al cerrar la semana anterior' : status === 'done' ? w.insignia.nombre : 'Semana en curso — ¡vamos!') + '</div>';
+      '<div class="sub">' + subText + '</div>';
     div.addEventListener('click', () => {
-      if (status === 'locked') return;
+      if (status === 'locked' || status === 'scheduled') return;
       openWeek(i);
     });
     track.appendChild(div);
@@ -546,6 +718,9 @@ function escapeHtml(s) {
    WEEK VIEW
    ============================================================ */
 function openWeek(index) {
+  const guardStatus = weekStatus(index);
+  if (guardStatus === 'locked' || guardStatus === 'scheduled') return; // seguridad extra: nadie ve contenido antes de tiempo
+
   activeWeekIndex = index;
   const w = WEEKS[index];
   const p = weekProgress(w.id);
@@ -571,6 +746,7 @@ function openWeek(index) {
 
   renderDayStrip(w, p);
   renderIndividualOptions(w);
+  renderMemberChecklist('memberChecklist', p);
   document.getElementById('familyChallengeText').textContent = w.desafioFamiliar;
   document.getElementById('serviceActionText').textContent = w.accionServicio;
 
@@ -579,13 +755,215 @@ function openWeek(index) {
   renderEmojiRow(p);
   document.getElementById('closingNote').value = (p.closing && p.closing.note) || '';
 
-  renderDayTabs(w, p);
-  activeDay = p.mondayDone ? 'retos' : 'lunes';
-  if (p.closing) activeDay = 'cierre';
-  showDayPanel(activeDay, w, p);
+  const gate = document.getElementById('activationGate');
+  const needsActivation = !p.closing && !p.activated;
+  gate.hidden = !needsActivation;
+  document.getElementById('pinCard').hidden = true;
+  document.getElementById('dayTabs').hidden = needsActivation;
+  document.querySelectorAll('.dayPanel').forEach(el => { el.hidden = true; });
+
+  if (!needsActivation) {
+    renderDayTabs(w, p);
+    activeDay = p.mondayDone ? 'retos' : 'lunes';
+    if (p.closing) activeDay = 'cierre';
+    showDayPanel(activeDay, w, p);
+  }
 
   showScreen('week');
 }
+
+/* ============================================================
+   PIN DE ACTIVACIÓN
+   El papá/mamá crea un PIN de 4 dígitos la primera vez que activa
+   una semana. Después, ese mismo PIN se pide cada vez que alguien
+   quiera activar la semana siguiente — así no cualquiera en el
+   celular puede destapar el contenido sin permiso.
+   ============================================================ */
+function hasPin() {
+  return !!(state.adminPin && state.adminPin.length === 4);
+}
+
+// pinPendingAction: { type: 'activate', weekIndex } | { type: 'admin' }
+let pinPendingAction = null;
+
+function showPinCard(action) {
+  pinPendingAction = action;
+  Object.values(screens).forEach(el => { el.hidden = true; }); // el pinCard tapa cualquier pantalla de fondo
+  window.scrollTo(0, 0);
+  const pinCard = document.getElementById('pinCard');
+  pinCard.hidden = false;
+
+  const title = document.getElementById('pinCardTitle');
+  const text = document.getElementById('pinCardText');
+  const pinInput = document.getElementById('pinInput');
+  const confirmInput = document.getElementById('pinConfirmInput');
+  const errorEl = document.getElementById('pinError');
+  const forgotRow = document.getElementById('forgotPinRow');
+
+  errorEl.style.display = 'none';
+  pinInput.value = '';
+  confirmInput.value = '';
+
+  if (!hasPin()) {
+    title.textContent = 'Creá un PIN para el administrador';
+    text.textContent = 'Elegí un PIN de 4 dígitos. De ahora en adelante, solo quien lo sepa va a poder activar semanas nuevas y ver el panel del administrador.';
+    confirmInput.style.display = 'block';
+    forgotRow.style.display = 'none';
+  } else {
+    title.textContent = action.type === 'admin' ? 'Ingresá el PIN del administrador' : 'Ingresá el PIN para activar';
+    text.textContent = 'Pedile el PIN a quien lo tenga (normalmente el papá o la mamá).';
+    confirmInput.style.display = 'none';
+    forgotRow.style.display = 'block';
+  }
+  pinInput.focus();
+}
+
+function hidePinCard() {
+  document.getElementById('pinCard').hidden = true;
+  pinPendingAction = null;
+}
+
+document.getElementById('activateWeekBtn').addEventListener('click', () => {
+  showPinCard({ type: 'activate', weekIndex: activeWeekIndex });
+});
+
+document.getElementById('openAdminBtn').addEventListener('click', () => {
+  showPinCard({ type: 'admin' });
+});
+
+document.getElementById('pinCancelBtn').addEventListener('click', () => {
+  const wasAdmin = pinPendingAction && pinPendingAction.type === 'admin';
+  hidePinCard();
+  if (wasAdmin) {
+    renderMap();
+    showScreen('home');
+  } else {
+    document.getElementById('activationGate').hidden = false;
+    showScreen('week');
+  }
+});
+
+document.getElementById('pinConfirmBtn').addEventListener('click', () => {
+  const pinInput = document.getElementById('pinInput');
+  const confirmInput = document.getElementById('pinConfirmInput');
+  const errorEl = document.getElementById('pinError');
+  const val = pinInput.value.trim();
+
+  if (!/^\d{4}$/.test(val)) {
+    errorEl.textContent = 'Escribí un PIN de 4 números.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  if (!hasPin()) {
+    const confirmVal = confirmInput.value.trim();
+    if (val !== confirmVal) {
+      errorEl.textContent = 'Los dos PIN no coinciden. Probá de nuevo.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    state.adminPin = val;
+    saveState();
+  } else {
+    if (val !== state.adminPin) {
+      errorEl.textContent = 'PIN incorrecto, probá de nuevo.';
+      errorEl.style.display = 'block';
+      pinInput.value = '';
+      pinInput.focus();
+      return;
+    }
+  }
+
+  const action = pinPendingAction;
+  hidePinCard();
+
+  if (action.type === 'admin') {
+    openAdminPanel();
+    return;
+  }
+
+  const idx = action.weekIndex;
+  const w = WEEKS[idx];
+  const p = weekProgress(w.id);
+  p.activated = true;
+  saveState();
+  openWeek(idx);
+});
+
+document.getElementById('forgotPinBtn').addEventListener('click', () => {
+  const ok = confirm('Esto borra el PIN actual — cualquiera podrá crear uno nuevo después. ¿Continuar?');
+  if (!ok) return;
+  state.adminPin = '';
+  saveState();
+  showPinCard(pinPendingAction);
+});
+
+/* ============================================================
+   PANEL DEL ADMINISTRADOR
+   ============================================================ */
+function renderMembersList() {
+  const list = document.getElementById('membersList');
+  if (state.members.length === 0) {
+    list.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía no agregaste a nadie.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  state.members.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'member-row';
+    row.innerHTML = '<span class="mname">' + escapeHtml(m.nombre) + '</span><button type="button" class="rm-btn">Quitar</button>';
+    row.querySelector('.rm-btn').addEventListener('click', () => {
+      state.members = state.members.filter(x => x.id !== m.id);
+      saveState();
+      renderMembersList();
+      renderAdminWeekSummary();
+    });
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('addMemberBtn').addEventListener('click', () => {
+  const input = document.getElementById('newMemberInput');
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  state.members.push({ id: 'm' + Date.now() + Math.floor(Math.random() * 1000), nombre: nombre });
+  saveState();
+  input.value = '';
+  renderMembersList();
+  renderAdminWeekSummary();
+});
+
+function renderAdminWeekSummary() {
+  const container = document.getElementById('adminWeekSummary');
+  const idx = WEEKS.findIndex((w, i) => weekStatus(i) === 'current');
+  if (idx === -1) {
+    container.innerHTML = '<div class="empty-note" style="padding:10px 4px;">No hay ninguna semana activa en este momento.</div>';
+    return;
+  }
+  const w = WEEKS[idx];
+  const p = weekProgress(w.id);
+  const doneDays = DAYS_RETO.filter(d => p.dailyChecks && p.dailyChecks[d.key]).length;
+
+  container.innerHTML =
+    '<div style="font-weight:700; font-size:14px; color:var(--teal-deep); margin-bottom:8px;">Semana ' + (idx + 1) + ' · ' + escapeHtml(w.tema) + '</div>' +
+    '<div style="font-size:13px; margin-bottom:4px;">Dinámica del lunes: ' + (p.mondayDone ? '✅ hecha' : '⬜ pendiente') + '</div>' +
+    '<div style="font-size:13px; margin-bottom:10px;">Días marcados (mar-vie): ' + doneDays + ' de ' + DAYS_RETO.length + '</div>' +
+    '<div class="section-title" style="margin-top:6px;">Desafío individual, por integrante</div>' +
+    '<div id="adminMemberChecklist"></div>';
+
+  renderMemberChecklist('adminMemberChecklist', p);
+}
+
+function openAdminPanel() {
+  renderMembersList();
+  renderAdminWeekSummary();
+  showScreen('admin');
+}
+
+document.getElementById('backFromAdminBtn').addEventListener('click', () => {
+  renderMap();
+  showScreen('home');
+});
 
 function renderAgeContent(w) {
   document.getElementById('ageContent').textContent = w.edades[activeAgeTab];
@@ -687,6 +1065,36 @@ function renderIndividualOptions(w) {
   list.innerHTML = w.desafiosIndividuales.map(o =>
     '<div class="option-item"><b>' + escapeHtml(o.etiqueta) + ':</b> ' + escapeHtml(o.texto) + '</div>'
   ).join('');
+}
+
+/* ============================================================
+   SEGUIMIENTO POR INTEGRANTE
+   Cada integrante marca su propia casilla cuando cumple su
+   desafío individual de la semana. El administrador ve el mismo
+   listado desde su panel, para saber a quién recordarle.
+   ============================================================ */
+function renderMemberChecklist(containerId, p) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!p.individualChecks) p.individualChecks = {};
+  if (state.members.length === 0) {
+    el.innerHTML = '<div class="empty-note" style="padding:14px 4px;">Todavía no hay integrantes cargados. Se agregan desde el Panel del administrador (🛡️, en el mapa).</div>';
+    return;
+  }
+  el.innerHTML = '';
+  state.members.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'check-row';
+    row.style.marginTop = '8px';
+    const inputId = containerId + '-chk-' + m.id;
+    const checked = !!p.individualChecks[m.id];
+    row.innerHTML = '<input type="checkbox" id="' + inputId + '"' + (checked ? ' checked' : '') + '><label for="' + inputId + '">' + escapeHtml(m.nombre) + '</label>';
+    row.querySelector('input').addEventListener('change', (e) => {
+      p.individualChecks[m.id] = e.target.checked;
+      saveState();
+    });
+    el.appendChild(row);
+  });
 }
 
 const CLOSING_EMOJIS = ['😊', '🙏', '❤️', '😭', '💪', '✨', '🤗', '😅'];
