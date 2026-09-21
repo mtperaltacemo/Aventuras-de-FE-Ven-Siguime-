@@ -260,7 +260,7 @@
 
     <div class="card">
       <div class="join-toggle">
-        <button type="button" id="toggleJoinBtn" class="active">Unirme a un grupo</button>
+        <button type="button" id="toggleJoinBtn" class="active">Unirme a la Aventura</button>
         <button type="button" id="toggleCreateBtn">Soy el administrador</button>
       </div>
 
@@ -272,6 +272,14 @@
         <input type="text" id="joinNameInput" placeholder="Nombre y apellido" maxlength="30">
         <div class="join-error" id="joinError"></div>
         <button type="button" class="cta-btn amber" id="joinGroupBtn" style="margin-top:14px;">Unirme al grupo →</button>
+      </div>
+
+      <div id="adminGate" class="join-form" hidden>
+        <p class="join-note">Para crear un grupo nuevo hace falta la clave de organizador — pedísela a quien coordina Ven, Sígueme si no la tenés.</p>
+        <label for="masterPinInput">Clave de organizador</label>
+        <input type="text" id="masterPinInput" placeholder="Clave" maxlength="20" style="text-align:center; letter-spacing:2px; font-weight:700;">
+        <div class="join-error" id="adminGateError"></div>
+        <button type="button" class="cta-btn amber" id="adminGateBtn" style="margin-top:14px;">Continuar →</button>
       </div>
 
       <div id="createForm" class="join-form" hidden>
@@ -313,7 +321,7 @@
     <!-- ============ HOME: MAPA DE LA AVENTURA ============ -->
     <div id="screenHome">
       <div class="hero-card">
-        <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grupo de jóvenes caminando hacia la capilla al amanecer">
+        <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Un joven y una joven caminando hacia la capilla, representando al grupo JAS">
           <defs>
             <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#F0B8D2"/>
@@ -349,16 +357,17 @@
           </g>
           <path d="M0,140 Q140,112 205,120 T400,104 L400,150 L0,150 Z" fill="url(#hillGrad)"/>
           <path d="M35,150 Q140,120 205,126 T400,110" fill="none" stroke="#FFFDF8" stroke-width="11" stroke-linecap="round" opacity="0.55"/>
-          <!-- grupo de jóvenes caminando -->
+          <!-- un joven (pantalón, cabeza lisa) y una joven (pollera bien marcada, colita de pelo) -->
           <g fill="#2A2438">
-            <circle cx="62" cy="124" r="6.4"/>
-            <path d="M55,131 q7,-6.4 14,0 l2.4,18 q-9.4,3.8 -18.8,0 z"/>
-            <circle cx="83" cy="119" r="7"/>
-            <path d="M75.5,127 q7.5,-6.6 15,0 l2.6,20 q-10,4 -20.2,0 z"/>
-            <circle cx="104" cy="124" r="6.2"/>
-            <path d="M97.5,131 q6.5,-6 13,0 l2.2,17 q-8.7,3.6 -17.4,0 z"/>
-            <circle cx="124" cy="120" r="6.6"/>
-            <path d="M117,127.5 q7,-6.2 14,0 l2.4,19 q-9.4,3.8 -18.8,0 z"/>
+            <!-- joven (mujer): cabeza + colita de pelo + pollera bien triangular -->
+            <circle cx="88" cy="113" r="7.3"/>
+            <path d="M94,109 Q101,111 99,120 Q96,119 93,113 Z"/>
+            <path d="M81,120 L95,120 L108,149 L68,149 Z"/>
+            <!-- joven (hombre): cabeza lisa + torso recto + piernas bien separadas -->
+            <circle cx="140" cy="112" r="7.6"/>
+            <path d="M132.5,120 L147.5,120 L147.5,136 L132.5,136 Z"/>
+            <path d="M132.5,136 L139,136 L137.5,150 L131,150 Z"/>
+            <path d="M141,136 L147.5,136 L149,150 L142.5,150 Z"/>
           </g>
         </svg>
       </div>
@@ -704,23 +713,52 @@ function escapeHtml(s) {
 
 /* ============================================================
    PANTALLA DE INGRESO: crear grupo o unirse con un código
+   Para llegar al formulario de "Crear grupo" hay que pasar antes
+   por una clave de organizador — así no cualquiera que abra la
+   app puede armar un grupo nuevo por curiosidad. Para cambiarla,
+   editar el valor de MASTER_ADMIN_PIN acá abajo.
    ============================================================ */
+const MASTER_ADMIN_PIN = 'JAS2026';
+
 const toggleJoinBtn = document.getElementById('toggleJoinBtn');
 const toggleCreateBtn = document.getElementById('toggleCreateBtn');
 const joinForm = document.getElementById('joinForm');
+const adminGate = document.getElementById('adminGate');
 const createForm = document.getElementById('createForm');
+
+function resetAdminGate() {
+  document.getElementById('masterPinInput').value = '';
+  document.getElementById('adminGateError').style.display = 'none';
+  adminGate.hidden = true;
+  createForm.hidden = true;
+}
 
 toggleJoinBtn.addEventListener('click', () => {
   toggleJoinBtn.classList.add('active');
   toggleCreateBtn.classList.remove('active');
   joinForm.hidden = false;
-  createForm.hidden = true;
+  resetAdminGate();
 });
 toggleCreateBtn.addEventListener('click', () => {
   toggleCreateBtn.classList.add('active');
   toggleJoinBtn.classList.remove('active');
-  createForm.hidden = false;
   joinForm.hidden = true;
+  createForm.hidden = true;
+  adminGate.hidden = false;
+  document.getElementById('masterPinInput').focus();
+});
+
+document.getElementById('adminGateBtn').addEventListener('click', () => {
+  const val = document.getElementById('masterPinInput').value.trim();
+  const errorEl = document.getElementById('adminGateError');
+  if (val.toUpperCase() !== MASTER_ADMIN_PIN.toUpperCase()) {
+    errorEl.textContent = 'Esa clave no es correcta. Pedísela a quien coordina Ven, Sígueme.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  errorEl.style.display = 'none';
+  adminGate.hidden = true;
+  createForm.hidden = false;
 });
 
 function setBtnBusy(btn, busy, busyLabel, normalLabel) {
