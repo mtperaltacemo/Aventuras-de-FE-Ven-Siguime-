@@ -1,0 +1,15 @@
+{
+  "name": "Aventura JAS — Ven, Sígueme",
+  "short_name": "Aventura JAS",
+  "start_url": "./aventura-jas.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F1FA",
+  "theme_color": "#3D3A72",
+  "icons": [
+    { "src": "icon-jas-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-jas-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-jas-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-jas-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

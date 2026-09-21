@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aventura JAS — Ven, Sígueme</title>
+<!-- Permite agregar la app a la pantalla de inicio del celular, con ícono propio -->
+<link rel="manifest" href="manifest-jas.json">
+<link rel="icon" href="icon-jas-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-jas.png">
+<meta name="theme-color" content="#3D3A72">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aventura JAS">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -456,8 +465,12 @@
         </div>
 
         <div class="card">
-          <div class="section-title">¿Quién del grupo ya cumplió su desafío?</div>
-          <div id="memberChecklist"></div>
+          <div class="section-title">Tu desafío individual</div>
+          <div class="check-row">
+            <input type="checkbox" id="individualDoneCheck">
+            <label for="individualDoneCheck">Ya cumplí mi desafío</label>
+          </div>
+          <p id="groupChallengeCount" style="font-size:12.5px; color:var(--muted); margin:10px 0 0;"></p>
         </div>
 
         <div class="card">
@@ -1009,7 +1022,7 @@ function openWeek(index) {
 
   renderDayStrip(w, p);
   renderIndividualOptions(w);
-  renderMemberChecklist('memberChecklist', w.id);
+  renderChallengeStatus(w.id);
   document.getElementById('serviceActionText').textContent = w.accionServicio;
 
   document.getElementById('closingQuestion').textContent = w.preguntaCierre;
@@ -1050,7 +1063,7 @@ function refreshWeekDynamic() {
   applyGateVisibility(p);
   document.getElementById('mondayDoneCheck').checked = !!p.mondayDone;
   renderDayStrip(w, p);
-  renderMemberChecklist('memberChecklist', w.id);
+  renderChallengeStatus(w.id);
   if (p.activated) {
     document.getElementById('dayTabs').hidden = false;
     renderDayTabs(w, p);
@@ -1306,6 +1319,11 @@ document.getElementById('mondayDoneCheck').addEventListener('change', (e) => {
   writeMine(w.id, 'mondayDone', e.target.checked);
 });
 
+document.getElementById('individualDoneCheck').addEventListener('change', (e) => {
+  const w = WEEKS[activeWeekIndex];
+  writeMine(w.id, 'individualDone', e.target.checked);
+});
+
 document.getElementById('startChallengeBtn').addEventListener('click', () => {
   const w = WEEKS[activeWeekIndex];
   writeMine(w.id, 'mondayDone', true);
@@ -1348,36 +1366,23 @@ function renderIndividualOptions(w) {
 /* ============================================================
    SEGUIMIENTO POR INTEGRANTE
    Cada joven marca su propia casilla cuando cumple su desafío
-   individual de la semana. El resto del grupo (y el administrador
-   desde su panel) ve el mismo listado en vivo, para saber a quién
-   recordarle — pero solo vos podés marcar la tuya.
+   individual de la semana. El resto del grupo solo ve un conteo
+   agregado ("4 de 8 ya cumplieron"), sin nombres — el detalle de
+   quién falta queda solo en el panel del administrador, para sus
+   recordatorios, así nadie queda expuesto frente al grupo.
    ============================================================ */
-function renderMemberChecklist(containerId, weekId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
+function renderChallengeStatus(weekId) {
+  const check = document.getElementById('individualDoneCheck');
+  const countEl = document.getElementById('groupChallengeCount');
+  const p = weekProgress(weekId);
+  check.checked = !!p.individualDone;
+
   const entries = rosterEntries();
-  if (entries.length === 0) {
-    el.innerHTML = '<div class="empty-note" style="padding:14px 4px;">Todavía no hay nadie más en el grupo.</div>';
-    return;
-  }
   const semanaMiembros = (groupData.semanas && groupData.semanas[weekId] && groupData.semanas[weekId].miembros) || {};
-  el.innerHTML = '';
-  entries.forEach(m => {
-    const done = !!(semanaMiembros[m.id] && semanaMiembros[m.id].individualDone);
-    const isMe = m.id === identity.memberId;
-    const row = document.createElement('div');
-    row.className = 'check-row';
-    row.style.marginTop = '8px';
-    const inputId = containerId + '-chk-' + m.id;
-    row.innerHTML = '<input type="checkbox" id="' + inputId + '"' + (done ? ' checked' : '') + (isMe ? '' : ' disabled') + '>' +
-      '<label for="' + inputId + '">' + escapeHtml(m.nombre) + (isMe ? ' (vos)' : '') + '</label>';
-    if (isMe) {
-      row.querySelector('input').addEventListener('change', (e) => {
-        writeMine(weekId, 'individualDone', e.target.checked);
-      });
-    }
-    el.appendChild(row);
-  });
+  const doneCount = entries.filter(m => semanaMiembros[m.id] && semanaMiembros[m.id].individualDone).length;
+  countEl.textContent = entries.length <= 1
+    ? '¡Vos podés ser el primero en cumplirlo esta semana! 💪'
+    : doneCount + ' de ' + entries.length + ' ya cumplieron su desafío esta semana 💪';
 }
 
 const CLOSING_EMOJIS = ['😊', '🙏', '❤️', '😭', '💪', '✨', '🤗', '😅'];
