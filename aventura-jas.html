@@ -543,10 +543,16 @@
       </div>
 
       <div class="card">
+        <div class="section-title">Comenzar la semana</div>
+        <p id="adminStartWeekText" style="font-size:13.5px; line-height:1.5; margin:0 0 12px;">—</p>
+        <button class="cta-btn amber" id="startWeekBtn" hidden>Comenzar la semana →</button>
+      </div>
+
+      <div class="card">
         <div class="section-title">Código del grupo</div>
         <div class="code-box">
           <div class="code-value" id="adminCodeValue">——————</div>
-          <div class="code-hint">Compartilo con el grupo JAS para que se unan</div>
+          <div class="code-hint">Compartilo con el grupo JAS — recién pueden entrar una vez que comenzaste la semana</div>
         </div>
         <button class="cta-btn small secondary" id="shareCodeBtn">📤 Compartir por WhatsApp</button>
       </div>
@@ -799,6 +805,13 @@ document.getElementById('joinGroupBtn').addEventListener('click', async () => {
       setBtnBusy(btn, false, '', 'Unirme al grupo →');
       return;
     }
+    const semanasSnap = await fref('grupos/' + code + '/semanas').once('value');
+    if (!anyWeekLive(semanasSnap.val())) {
+      errorEl.textContent = 'Todavía no arrancó ninguna semana — esperá a que tu líder la active y volvé a tocar "Unirme al grupo →".';
+      errorEl.style.display = 'block';
+      setBtnBusy(btn, false, '', 'Unirme al grupo →');
+      return;
+    }
     const memberId = 'm' + Date.now() + Math.floor(Math.random() * 1000);
     await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: new Date().toISOString() });
     identity = { groupCode: code, memberId: memberId, nombre: nombre };
@@ -830,7 +843,7 @@ document.getElementById('createGroupBtn').addEventListener('click', async () => 
     const now = new Date().toISOString();
     await fref('grupos/' + code + '/info').set({ nombreGrupo: groupName, creadoEn: now });
     await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: now });
-    identity = { groupCode: code, memberId: memberId, nombre: nombre };
+    identity = { groupCode: code, memberId: memberId, nombre: nombre, isHost: true };
     saveIdentity(identity);
     startApp();
   } catch (e) {
@@ -873,12 +886,16 @@ function onGroupDataChange() {
     renderTopbar();
     renderMap();
     showScreen('home');
+    // Quien creó el grupo cae directo en su Panel del administrador (pidiendo
+    // el PIN primero, como siempre) en vez del mapa — como el Panel del
+    // Anfitrión de la trivia en vivo. El resto entra al mapa normalmente.
+    if (identity.isHost) showPinCard({ type: 'admin' });
     return;
   }
   renderTopbar();
   if (!screens.home.hidden) renderMap();
   if (!screens.week.hidden) refreshWeekDynamic();
-  if (!screens.admin.hidden) { renderAdminCode(); renderMembersList(); renderAdminWeekSummary(); }
+  if (!screens.admin.hidden) { renderAdminCode(); renderAdminStartWeek(); renderMembersList(); renderAdminWeekSummary(); }
 }
 
 /* ============================================================
@@ -896,6 +913,13 @@ function weekProgress(weekId) {
     closingDone: !!mp.closingDone,
     closingAt: mp.closingAt || null,
   };
+}
+// Para el portón de ingreso: ¿ya arrancó alguna semana en este grupo? Se
+// evalúa sobre el snapshot crudo de Firebase (todavía no hay identity para
+// un participante nuevo, así que no se puede usar weekProgress()).
+function anyWeekLive(semanas) {
+  semanas = semanas || {};
+  return WEEKS.some(w => !!(semanas[w.id] && semanas[w.id].activated));
 }
 // Aplica el mismo cambio a la copia local de groupData, para que la pantalla
 // se actualice al toque aunque el listener de Firebase todavía no haya
@@ -1275,8 +1299,38 @@ function renderAdminWeekSummary() {
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
+function renderAdminStartWeek() {
+  const text = document.getElementById('adminStartWeekText');
+  const btn = document.getElementById('startWeekBtn');
+  const currentIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'current');
+  if (currentIdx !== -1) {
+    const w = WEEKS[currentIdx];
+    text.textContent = 'Semana ' + (currentIdx + 1) + ' · ' + w.tema + ' — ya está en curso. Compartí el código de abajo para que se sumen.';
+    btn.hidden = true;
+    return;
+  }
+  const readyIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'ready');
+  if (readyIdx !== -1) {
+    const w = WEEKS[readyIdx];
+    text.textContent = 'Semana ' + (readyIdx + 1) + ' · ' + w.tema + ' — lista para comenzar.';
+    btn.hidden = false;
+    btn.onclick = () => {
+      activateWeek(w.id);
+      renderAdminStartWeek();
+      renderAdminWeekSummary();
+    };
+    return;
+  }
+  btn.hidden = true;
+  const hasAnyDone = WEEKS.some((w, i) => weekStatus(i) === 'done');
+  text.textContent = (hasAnyDone && WEEKS.length)
+    ? '¡Ya completaron todas las semanas cargadas! Avisale a quien coordina Ven, Sígueme cuando quieran la próxima.'
+    : 'Todavía no hay ninguna semana lista para comenzar (esperando su fecha, o falta cerrar la anterior).';
+}
+
 function openAdminPanel() {
   renderAdminCode();
+  renderAdminStartWeek();
   renderMembersList();
   renderAdminWeekSummary();
   showScreen('admin');
@@ -1288,8 +1342,8 @@ document.getElementById('backFromAdminBtn').addEventListener('click', () => {
 });
 
 document.getElementById('shareCodeBtn').addEventListener('click', () => {
-  const url = location.href.split('#')[0].split('?')[0];
-  const msg = 'Únite a nuestro grupo de Aventura JAS (Ven, Sígueme). Código: ' + identity.groupCode + '\n' + url;
+  const url = location.href.split('#')[0].split('?')[0] + '?code=' + identity.groupCode;
+  const msg = 'Únite a nuestro grupo de Aventura JAS (Ven, Sígueme). Tocá este link y escribí tu nombre para unirte:\n' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 });
 
@@ -1513,9 +1567,32 @@ document.getElementById('viewJournalFromBadgeBtn').addEventListener('click', () 
 /* ============================================================
    INIT
    ============================================================ */
+// Si alguien llega desde un link de invitación (?code=XXXXXX, generado por
+// "Compartir por WhatsApp" en el panel del administrador), va directo a
+// unirse con ese código — nunca ve la opción de crear un grupo nuevo.
+function getUrlCode() {
+  try {
+    const c = (new URLSearchParams(location.search).get('code') || '').trim().toUpperCase();
+    return /^[A-Z0-9]{4,10}$/.test(c) ? c : '';
+  } catch (e) { return ''; }
+}
+const urlCode = getUrlCode();
+
 if (identity && identity.groupCode && identity.memberId) {
   document.getElementById('screenJoin').hidden = true;
   startApp();
+} else if (urlCode) {
+  document.querySelector('#screenJoin .join-toggle').hidden = true;
+  adminGate.hidden = true;
+  createForm.hidden = true;
+  joinForm.hidden = false;
+  const codeInput = document.getElementById('joinCodeInput');
+  codeInput.value = urlCode;
+  codeInput.readOnly = true;
+  codeInput.style.background = 'var(--cream-deep)';
+  document.querySelector('#joinForm .join-note').textContent =
+    'Te invitaron a unirte al grupo JAS (código ' + urlCode + '). Escribí tu nombre para empezar.';
+  document.getElementById('joinNameInput').focus();
 }
 
 })();

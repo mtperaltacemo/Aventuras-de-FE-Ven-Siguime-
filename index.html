@@ -176,6 +176,29 @@
   .add-member-row { display:flex; gap:8px; margin-top: 12px; }
   .add-member-row input[type=text] { flex: 1 1 0%; min-width: 0; }
 
+  /* ---- Ingreso: unirme / crear la aventura familiar ---- */
+  .userRow { text-align:center; margin-bottom: 18px; font-size: 12.5px; color: var(--muted); }
+  .userRow .groupCode { font-weight:700; color: var(--teal-deep); letter-spacing: 1px; }
+  .userRow .leaveLink { background:none; border:none; color: var(--muted); font-size:11.5px; text-decoration:underline; cursor:pointer; margin-left:6px; }
+  .join-toggle { display:flex; gap:8px; margin-bottom: 14px; }
+  .join-toggle button {
+    flex:1; padding: 11px 6px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: var(--paper); color: var(--muted); font-weight:700; font-size: 13px; cursor:pointer;
+  }
+  .join-toggle button.active { background: var(--teal); color:#fff; border-color: var(--teal); }
+  .join-form label { display:block; font-size: 12px; font-weight:700; color: var(--muted); margin: 10px 0 5px; }
+  .join-form label:first-child { margin-top: 0; }
+  .join-error { color: var(--terracotta); font-size: 12.5px; margin-top: 8px; display:none; }
+  .join-note { font-size: 12.5px; color: var(--muted); line-height:1.5; margin: 0 0 12px; }
+  .code-box { text-align:center; background: var(--cream-deep); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .code-box .code-value { font-family:'Fraunces',serif; font-size: 28px; font-weight:700; letter-spacing: 4px; color: var(--teal-deep); }
+  .code-box .code-hint { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .admin-table { width:100%; border-collapse: collapse; font-size: 12.5px; }
+  .admin-table th, .admin-table td { text-align:center; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  .admin-table th { color: var(--muted); font-weight:700; font-size: 10.5px; text-transform:uppercase; letter-spacing:.03em; }
+  .admin-table td:first-child, .admin-table th:first-child { text-align:left; font-weight:600; }
+  .loading-note { text-align:center; color: var(--muted); font-size: 13.5px; padding: 60px 10px; }
+
   textarea, input[type=text] {
     width:100%; border:1px solid var(--line); border-radius: 10px; padding: 10px 12px;
     font-family:'Inter',sans-serif; font-size: 13.5px; resize: vertical; background: var(--cream);
@@ -236,6 +259,54 @@
 <body>
 <div class="wrap">
 
+  <!-- ============ INGRESO: UNIRSE O CREAR LA AVENTURA FAMILIAR ============ -->
+  <div id="screenJoin">
+    <div class="topbar">
+      <div class="brand">
+        <span class="icon">🧭</span>
+        <div>
+          <div class="name">Aventura de Fe</div>
+          <div class="title">Noche de Hogar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="join-toggle">
+        <button type="button" id="toggleJoinBtn" class="active">Unirme a mi familia</button>
+        <button type="button" id="toggleCreateBtn">Soy el anfitrión/a</button>
+      </div>
+
+      <div id="joinForm" class="join-form">
+        <p class="join-note">Pedile el código a quien organiza la Aventura de Fe en tu familia y escribí tu nombre para empezar.</p>
+        <label for="joinCodeInput">Código de la familia</label>
+        <input type="text" id="joinCodeInput" placeholder="Ej: AB3D9K" maxlength="8" style="text-transform:uppercase; text-align:center; letter-spacing:3px; font-weight:700;">
+        <label for="joinNameInput">Tu nombre</label>
+        <input type="text" id="joinNameInput" placeholder="Nombre" maxlength="30">
+        <div class="join-error" id="joinError"></div>
+        <button type="button" class="cta-btn amber" id="joinGroupBtn" style="margin-top:14px;">Unirme →</button>
+      </div>
+
+      <div id="createForm" class="join-form" hidden>
+        <p class="join-note">Creá la aventura de tu familia una sola vez. Vas a recibir un código para compartir con el resto de la familia — cada uno lo usa para unirse desde su propio celular.</p>
+        <label for="newGroupNameInput">Nombre de la familia</label>
+        <input type="text" id="newGroupNameInput" placeholder="Ej: Familia López" maxlength="40">
+        <label for="creatorNameInput">Tu nombre</label>
+        <input type="text" id="creatorNameInput" placeholder="Nombre" maxlength="30">
+        <div class="join-error" id="createError"></div>
+        <button type="button" class="cta-btn amber" id="createGroupBtn" style="margin-top:14px;">Crear la aventura →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CARGANDO ============ -->
+  <div id="screenLoading" hidden>
+    <div class="loading-note">Conectando con tu familia…</div>
+  </div>
+
+  <!-- ============ APP (una vez que hay identidad y llegaron los datos) ============ -->
+  <div id="appRoot" hidden>
+
   <div class="topbar">
     <div class="brand">
       <span class="icon">🧭</span>
@@ -245,6 +316,11 @@
       </div>
     </div>
     <div class="streak" id="streakBadge">🔥 0 semanas</div>
+  </div>
+
+  <div class="userRow" id="userRow">
+    👋 <span id="userGreeting"></span> · Código: <span class="groupCode" id="userGroupCode"></span>
+    <button type="button" class="leaveLink" id="leaveGroupBtn">Salir</button>
   </div>
 
   <div class="familyNameRow">
@@ -404,8 +480,12 @@
       </div>
 
       <div class="card">
-        <div class="section-title">¿Quién ya cumplió su desafío esta semana?</div>
-        <div id="memberChecklist"></div>
+        <div class="section-title">Tu desafío individual</div>
+        <div class="check-row">
+          <input type="checkbox" id="myIndividualCheck">
+          <label for="myIndividualCheck">Ya lo cumplí</label>
+        </div>
+        <div class="join-note" id="groupChallengeCount" style="margin:10px 0 0;"></div>
       </div>
 
       <div class="card">
@@ -482,6 +562,21 @@
     </div>
 
     <div class="card">
+      <div class="section-title">Comenzar la semana</div>
+      <p id="adminStartWeekText" style="font-size:13.5px; line-height:1.5; margin:0 0 12px;">—</p>
+      <button class="cta-btn amber" id="startWeekBtn" hidden>Comenzar la semana →</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Código de la familia</div>
+      <div class="code-box">
+        <div class="code-value" id="adminCodeValue">——————</div>
+        <div class="code-hint">Compartilo con el resto de la familia para que se unan — recién pueden entrar una vez que comenzaste la semana</div>
+      </div>
+      <button class="cta-btn small secondary" id="shareCodeBtn">📤 Compartir por WhatsApp</button>
+    </div>
+
+    <div class="card">
       <div class="section-title">Integrantes de la familia</div>
       <div id="membersList"></div>
       <div class="add-member-row">
@@ -512,10 +607,48 @@
     </div>
   </div>
 
+  </div>
+  <!-- fin de #appRoot -->
+
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
 <script>
 (function(){
+
+/* ============================================================
+   FIREBASE — mismo proyecto que Aventura JAS y la trivia, con un
+   namespace propio para no mezclar datos entre apps.
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAirG_Kj0zB56aTGJ02bWIXXLquCkJyHz0",
+  authDomain: "finilager-trivia.firebaseapp.com",
+  databaseURL: "https://finilager-trivia-default-rtdb.firebaseio.com",
+  projectId: "finilager-trivia",
+  storageBucket: "finilager-trivia.firebasestorage.app",
+  messagingSenderId: "187189730256",
+  appId: "1:187189730256:web:bec3f70c23006ac73877d5"
+};
+const DB_NAMESPACE = 'aventuraDeFe2026/';
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+function fref(path) { return db.ref(DB_NAMESPACE + path); }
+
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function randomCode(len) {
+  let s = '';
+  for (let i = 0; i < len; i++) s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  return s;
+}
+async function generateUniqueCode() {
+  for (let i = 0; i < 8; i++) {
+    const code = randomCode(6);
+    const snap = await fref('grupos/' + code + '/info').once('value');
+    if (!snap.exists()) return code;
+  }
+  return randomCode(8);
+}
 
 /* ============================================================
    CONTENIDO DE LAS SEMANAS
@@ -561,51 +694,94 @@ const WEEKS = [
     testimonio: 'Confiar no significa entender todo el camino, sino apoyarnos en Aquel que sí lo ve completo.',
     insignia: { emoji: '🛤️', nombre: 'Insignia de la Vereda Enderezada' },
   },
+  {
+    id: 'semana-2-obra-maravillosa-y-prodigio',
+    isDemo: false,
+    fechaInicio: '2026-09-21', // no se puede activar antes de esta fecha
+    tema: 'Una obra maravillosa y un prodigio',
+    principio: 'Aunque el orgullo y el pecado dejan las cosas rotas y desiertas, la misericordia de Dios es mayor que Su juicio: Él puede transformar lo que parece irreparable en algo nuevo, fértil y lleno de esperanza.',
+    escrituras: [
+      { texto: 'Por tanto, he aquí que nuevamente haré una obra maravillosa entre este pueblo, una obra maravillosa y un prodigio.', ref: 'Isaías 29:14' },
+      { texto: 'Se alegrarán el desierto y el erial; y el yermo se regocijará y florecerá como la rosa.', ref: 'Isaías 35:1' },
+      { texto: 'Y acontecerá que en el día en que Jehová te dé reposo de tu dolor, y de tu temor y de la dura servidumbre en la que te hicieron servir.', ref: 'Isaías 14:3' },
+      { texto: 'Destruirá a la muerte para siempre, y enjugará Jehová el Señor toda lágrima de todos los rostros.', ref: 'Isaías 25:8' },
+    ],
+    edades: {
+      ninos: 'Isaías dice que un desierto —un lugar seco donde no crece nada— puede llenarse de flores. Eso es lo que Dios hace con las cosas que parecen "rotas": las vuelve a hacer lindas y nuevas. ¡Hasta las lágrimas las seca Él mismo!',
+      jovenes: 'Isaías compara el orgullo de Babilonia con la rebelión de Lucifer: los dos se creyeron más grandes que Dios y los dos cayeron. ¿En qué se parece eso a la presión de "aparentar" o creerse mejor que otros que a veces sentimos hoy?',
+      adultos: 'Isaías 29 describe un "libro sellado" que nadie puede leer, hasta que alguien sin estudios lo entrega y se cumple lo escrito: es una profecía directa sobre José Smith y el Libro de Mormón (ver 2 Nefi 27:6-26). La Restauración es, literalmente, la "obra maravillosa y un prodigio" que Isaías anunció siglos antes.',
+    },
+    preguntaVida: '¿Hay algo en tu vida —una relación, un hábito, una herida— que sientas tan "desierto" que ya ni pedís que cambie? ¿Qué te dicen estas promesas de Isaías sobre eso?',
+    dinamica: 'Junten objetos o imágenes que representen la Restauración del Evangelio (un Libro de Mormón, una foto del templo, una imagen de la Primera Visión). Por turnos, cada uno toma uno y explica por qué, para él o ella, ese objeto es parte de la "obra maravillosa" de la que habla Isaías 29:14.',
+    conversacion: {
+      ninos: '¿Qué es algo "feo" o "roto" que te gustaría pedirle a Dios que arregle?',
+      jovenes: '¿Cuándo fue la última vez que viste a Dios convertir un "desierto" en algo bueno, en tu vida o en la de alguien cercano?',
+      adultos: '¿Qué señales de orgullo (propio o ajeno) reconocés en Isaías 24:5 o 29:13 que también ves en el mundo, o en vos mismo, hoy?',
+    },
+    desafiosIndividuales: [
+      { etiqueta: 'Niños', texto: 'Dibujá un desierto convirtiéndose en jardín, y contale a la familia qué "desierto" de tu vida te gustaría que Dios cambiara.' },
+      { etiqueta: 'Jóvenes', texto: 'Identificá un área donde sentís orgullo o comparación con otros, y escribí una oración pidiendo humildad en esa área esta semana.' },
+      { etiqueta: 'Adultos', texto: 'Leé 2 Nefi 27:6-26 y compará esa profecía con la historia de José Smith y el Libro de Mormón.' },
+    ],
+    desafioFamiliar: 'Cada noche de esta semana, compartan en la cena una cosa "seca" o difícil de estos días y una forma en que vieron a Dios traer un poco de "lluvia" a esa situación.',
+    accionServicio: 'Visiten o llamen a alguien que esté pasando por un momento "desierto" (soledad, enfermedad, duelo) y compartan una palabra de esperanza, sin necesidad de resolverle el problema.',
+    preguntaCierre: '¿Qué "obra maravillosa" sentimos que Dios hizo en nuestra familia esta semana, por más pequeña que haya sido?',
+    frasePararecordar: '"Se alegrarán el desierto y el erial; y el yermo se regocijará y florecerá como la rosa." (Isaías 35:1)',
+    testimonio: 'Dios no solo repara lo roto: lo convierte en algo nuevo. Ninguna situación está tan seca que Él no pueda hacerla florecer.',
+    insignia: { emoji: '🌷', nombre: 'Insignia del Desierto Florecido' },
+  },
 ];
 
 /* ============================================================
-   ESTADO / PERSISTENCIA (localStorage, por dispositivo)
+   IDENTIDAD LOCAL (por dispositivo)
+   Cada celular guarda solo con qué familia está y quién es. Todo
+   lo demás — progreso, PIN, diario familiar — vive en Firebase y
+   se comparte en tiempo real entre los celulares de la familia.
    ============================================================ */
-const STORAGE_KEY = 'aventuraDeFeState_v1';
+const IDENTITY_KEY = 'aventuraDeFeIdentity_v1';
 
-function defaultState() {
+function loadIdentity() {
+  try {
+    const raw = localStorage.getItem(IDENTITY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function saveIdentity(id) {
+  try { localStorage.setItem(IDENTITY_KEY, JSON.stringify(id)); }
+  catch (e) { console.error('No se pudo guardar la identidad:', e); }
+}
+function clearIdentity() {
+  try { localStorage.removeItem(IDENTITY_KEY); } catch (e) {}
+}
+
+let identity = loadIdentity(); // { groupCode, memberId, nombre }
+let groupData = {}; // snapshot en vivo de grupos/{code} en Firebase
+let appStarted = false;
+
+function weekProgress(weekId) {
+  const semana = (groupData.semanas && groupData.semanas[weekId]) || {};
+  const mp = (semana.miembros && semana.miembros[identity.memberId]) || {};
   return {
-    familyName: '',
-    currentWeekIndex: 0,
-    adminPin: '', // PIN de 4 dígitos que el papá/mamá crea la primera vez; sin esto nadie puede activar una semana
-    members: [], // { id, nombre } — integrantes de la familia, para el seguimiento individual
-    progress: {}, // weekId -> { activated, mondayDone, dailyChecks:{mar,mie,jue,vie}, individualChecks:{memberId:bool}, closing:{emoji,note,photo,closedAt}, badgeAwarded }
+    activated: !!semana.activated,
+    activatedAt: semana.activatedAt || null,
+    mondayDone: !!semana.mondayDone,
+    dailyChecks: semana.dailyChecks || {},
+    individualDone: !!mp.individualDone,
+    closing: semana.closing || null,
+    badgeAwarded: !!semana.badgeAwarded,
   };
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    return Object.assign(defaultState(), parsed);
-  } catch (e) {
-    console.error('No se pudo leer el estado guardado:', e);
-    return defaultState();
-  }
-}
-
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error('No se pudo guardar el estado (¿localStorage lleno o bloqueado?):', e);
-  }
-}
-
-let state = loadState();
-
-function weekProgress(weekId) {
-  if (!state.progress[weekId]) {
-    state.progress[weekId] = { activated: false, mondayDone: false, dailyChecks: {}, individualChecks: {}, closing: null, badgeAwarded: false };
-  }
-  if (!state.progress[weekId].individualChecks) state.progress[weekId].individualChecks = {};
-  return state.progress[weekId];
+// Usado en el ingreso: ¿hay ALGUNA semana activada y todavía no cerrada en
+// este grupo ahora mismo? Un participante nuevo solo puede unirse mientras
+// esto sea cierto — si nadie activó nada todavía (o ya se cerró), tiene que
+// esperar a que su anfitrión/a comience la semana.
+function anyWeekLive(semanas) {
+  semanas = semanas || {};
+  return WEEKS.some(w => {
+    const s = semanas[w.id];
+    return !!(s && s.activated && !s.closing);
+  });
 }
 
 /* ============================================================
@@ -633,17 +809,16 @@ let activeConvTab = 'ninos';
    RENDER: TOPBAR / RACHA / NOMBRE DE FAMILIA
    ============================================================ */
 function renderTopbar() {
-  const completedCount = WEEKS.filter(w => {
-    const p = state.progress[w.id];
-    return p && p.closing;
-  }).length;
+  const completedCount = WEEKS.filter(w => weekProgress(w.id).closing).length;
   document.getElementById('streakBadge').textContent = '🔥 ' + completedCount + (completedCount === 1 ? ' semana' : ' semanas');
   const input = document.getElementById('familyNameInput');
-  if (document.activeElement !== input) input.value = state.familyName || '';
+  const nombreFamilia = (groupData.info && groupData.info.nombreFamilia) || '';
+  if (document.activeElement !== input) input.value = nombreFamilia;
 }
 document.getElementById('familyNameInput').addEventListener('input', (e) => {
-  state.familyName = e.target.value;
-  saveState();
+  const relPath = 'info/nombreFamilia';
+  patchLocal(relPath, e.target.value);
+  fref('grupos/' + identity.groupCode + '/' + relPath).set(e.target.value);
 });
 
 /* ============================================================
@@ -667,17 +842,16 @@ function formatDateEs(dateStr) {
 
 function weekStatus(index) {
   const w = WEEKS[index];
-  const p = state.progress[w.id];
-  if (p && p.closing) return 'done';
+  const p = weekProgress(w.id);
+  if (p.closing) return 'done';
   let prevOk = true;
   if (index > 0) {
-    const prevW = WEEKS[index - 1];
-    const prevP = state.progress[prevW.id];
-    prevOk = !!(prevP && prevP.closing);
+    const prevP = weekProgress(WEEKS[index - 1].id);
+    prevOk = !!prevP.closing;
   }
   if (!prevOk) return 'locked';
   if (!dateReached(w.fechaInicio)) return 'scheduled'; // todavía no llega el domingo de esta semana
-  if (p && p.activated) return 'current';
+  if (p.activated) return 'current';
   return 'ready'; // se puede activar, pero el papá/mamá todavía no lo hizo
 }
 
@@ -718,6 +892,182 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
+   PANTALLA DE INGRESO: crear la aventura familiar o unirse con
+   un código. Cualquier familia puede crear la suya — a diferencia
+   de Aventura JAS (una sola clase), acá no hace falta una clave
+   maestra de organizador: cada familia arranca la propia.
+   ============================================================ */
+const toggleJoinBtn = document.getElementById('toggleJoinBtn');
+const toggleCreateBtn = document.getElementById('toggleCreateBtn');
+const joinForm = document.getElementById('joinForm');
+const createForm = document.getElementById('createForm');
+
+toggleJoinBtn.addEventListener('click', () => {
+  toggleJoinBtn.classList.add('active');
+  toggleCreateBtn.classList.remove('active');
+  joinForm.hidden = false;
+  createForm.hidden = true;
+});
+toggleCreateBtn.addEventListener('click', () => {
+  toggleCreateBtn.classList.add('active');
+  toggleJoinBtn.classList.remove('active');
+  joinForm.hidden = true;
+  createForm.hidden = false;
+});
+
+function setBtnBusy(btn, busy, busyLabel, normalLabel) {
+  btn.disabled = busy;
+  btn.textContent = busy ? busyLabel : normalLabel;
+}
+
+document.getElementById('joinGroupBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('joinGroupBtn');
+  const errorEl = document.getElementById('joinError');
+  errorEl.style.display = 'none';
+  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  const nombre = document.getElementById('joinNameInput').value.trim();
+  if (!code || !nombre) {
+    errorEl.textContent = 'Completá el código de la familia y tu nombre.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  setBtnBusy(btn, true, 'Buscando tu familia…', 'Unirme →');
+  try {
+    const snap = await fref('grupos/' + code + '/info').once('value');
+    if (!snap.exists()) {
+      errorEl.textContent = 'No encontramos ese código. Revisalo con quien organiza la Aventura de Fe.';
+      errorEl.style.display = 'block';
+      setBtnBusy(btn, false, '', 'Unirme →');
+      return;
+    }
+    const semanasSnap = await fref('grupos/' + code + '/semanas').once('value');
+    if (!anyWeekLive(semanasSnap.val())) {
+      errorEl.textContent = 'Todavía no arrancó ninguna semana — esperá a que tu anfitrión/a la active y volvé a tocar "Unirme →".';
+      errorEl.style.display = 'block';
+      setBtnBusy(btn, false, '', 'Unirme →');
+      return;
+    }
+    const memberId = 'm' + Date.now() + Math.floor(Math.random() * 1000);
+    await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: new Date().toISOString() });
+    identity = { groupCode: code, memberId: memberId, nombre: nombre };
+    saveIdentity(identity);
+    startApp();
+  } catch (e) {
+    console.error('Error al unirse a la familia:', e);
+    errorEl.textContent = 'No pudimos conectar. Revisá tu conexión a internet e intentá de nuevo.';
+    errorEl.style.display = 'block';
+    setBtnBusy(btn, false, '', 'Unirme →');
+  }
+});
+
+document.getElementById('createGroupBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('createGroupBtn');
+  const errorEl = document.getElementById('createError');
+  errorEl.style.display = 'none';
+  const familyName = document.getElementById('newGroupNameInput').value.trim();
+  const nombre = document.getElementById('creatorNameInput').value.trim();
+  if (!familyName || !nombre) {
+    errorEl.textContent = 'Completá el nombre de la familia y tu nombre.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  setBtnBusy(btn, true, 'Creando la aventura…', 'Crear la aventura →');
+  try {
+    const code = await generateUniqueCode();
+    const memberId = 'm' + Date.now() + Math.floor(Math.random() * 1000);
+    const now = new Date().toISOString();
+    await fref('grupos/' + code + '/info').set({ nombreFamilia: familyName, creadoEn: now });
+    await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: now });
+    identity = { groupCode: code, memberId: memberId, nombre: nombre, isHost: true };
+    saveIdentity(identity);
+    startApp();
+  } catch (e) {
+    console.error('Error al crear la aventura:', e);
+    errorEl.textContent = 'No pudimos conectar. Revisá tu conexión a internet e intentá de nuevo.';
+    errorEl.style.display = 'block';
+    setBtnBusy(btn, false, '', 'Crear la aventura →');
+  }
+});
+
+document.getElementById('leaveGroupBtn').addEventListener('click', () => {
+  const ok = confirm('Esto te desconecta de esta familia en este celular (los datos de la familia no se borran). ¿Continuar?');
+  if (!ok) return;
+  try { fref('grupos/' + identity.groupCode).off(); } catch (e) {}
+  clearIdentity();
+  location.reload();
+});
+
+/* ============================================================
+   ARRANQUE DE LA APP: conecta con Firebase en tiempo real
+   ============================================================ */
+function startApp() {
+  document.getElementById('screenJoin').hidden = true;
+  document.getElementById('screenLoading').hidden = false;
+  fref('grupos/' + identity.groupCode).on('value', (snap) => {
+    groupData = snap.val() || {};
+    onGroupDataChange();
+  }, (err) => {
+    console.error('Error de conexión con Firebase:', err);
+  });
+}
+
+function onGroupDataChange() {
+  if (!appStarted) {
+    appStarted = true;
+    document.getElementById('screenLoading').hidden = true;
+    document.getElementById('appRoot').hidden = false;
+    document.getElementById('userGreeting').textContent = identity.nombre;
+    document.getElementById('userGroupCode').textContent = identity.groupCode;
+    renderTopbar();
+    renderMap();
+    showScreen('home');
+    // El anfitrión/a que creó la familia cae directo en su panel (pidiendo
+    // el PIN primero, como siempre) en vez del mapa — como el Panel del
+    // Anfitrión de la trivia en vivo. El resto entra al mapa normalmente.
+    if (identity.isHost) showPinCard({ type: 'admin' });
+    return;
+  }
+  renderTopbar();
+  if (!screens.home.hidden) renderMap();
+  if (!screens.week.hidden) refreshWeekDynamic();
+  if (!screens.admin.hidden) { renderAdminCode(); renderAdminStartWeek(); renderMembersList(); renderAdminWeekSummary(); }
+}
+
+// Aplica el mismo cambio a la copia local de groupData, para que la pantalla
+// se actualice al toque aunque el listener de Firebase todavía no haya
+// confirmado el dato — evita el parpadeo justo después de tocar algo.
+function patchLocal(relPath, value) {
+  const parts = relPath.split('/').filter(Boolean);
+  let node = groupData;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const key = parts[i];
+    if (typeof node[key] !== 'object' || node[key] === null) node[key] = {};
+    node = node[key];
+  }
+  node[parts[parts.length - 1]] = value;
+}
+function writeShared(weekId, field, value) {
+  const relPath = 'semanas/' + weekId + '/' + field;
+  patchLocal(relPath, value);
+  fref('grupos/' + identity.groupCode + '/' + relPath).set(value);
+}
+function writeMine(weekId, field, value) {
+  const relPath = 'semanas/' + weekId + '/miembros/' + identity.memberId + '/' + field;
+  patchLocal(relPath, value);
+  fref('grupos/' + identity.groupCode + '/' + relPath).set(value);
+}
+function writeMemberField(weekId, memberId, field, value) {
+  const relPath = 'semanas/' + weekId + '/miembros/' + memberId + '/' + field;
+  patchLocal(relPath, value);
+  fref('grupos/' + identity.groupCode + '/' + relPath).set(value);
+}
+function activateWeek(weekId) {
+  const now = new Date().toISOString();
+  writeShared(weekId, 'activated', true);
+  writeShared(weekId, 'activatedAt', now);
+}
+
+/* ============================================================
    WEEK VIEW
    ============================================================ */
 function openWeek(index) {
@@ -749,7 +1099,7 @@ function openWeek(index) {
 
   renderDayStrip(w, p);
   renderIndividualOptions(w);
-  renderMemberChecklist('memberChecklist', p);
+  renderMyChallenge(w.id);
   document.getElementById('familyChallengeText').textContent = w.desafioFamiliar;
   document.getElementById('serviceActionText').textContent = w.accionServicio;
 
@@ -775,6 +1125,28 @@ function openWeek(index) {
   showScreen('week');
 }
 
+// Re-renderiza solo las partes dinámicas de la semana abierta (llamado en
+// cada actualización de Firebase, sin resetear la pestaña activa ni el scroll)
+function refreshWeekDynamic() {
+  const w = WEEKS[activeWeekIndex];
+  const p = weekProgress(w.id);
+  const gate = document.getElementById('activationGate');
+  const needsActivation = !p.closing && !p.activated;
+  gate.hidden = !needsActivation;
+  document.getElementById('dynamicDone').checked = !!p.mondayDone;
+  renderDayStrip(w, p);
+  renderMyChallenge(w.id);
+  document.getElementById('closingNote').value = (p.closing && p.closing.note) || '';
+  renderEmojiRow(p);
+  if (!needsActivation) {
+    document.getElementById('dayTabs').hidden = false;
+    renderDayTabs(w, p);
+  } else {
+    document.getElementById('dayTabs').hidden = true;
+    document.querySelectorAll('.dayPanel').forEach(el => { el.hidden = true; });
+  }
+}
+
 /* ============================================================
    PIN DE ACTIVACIÓN
    El papá/mamá crea un PIN de 4 dígitos la primera vez que activa
@@ -783,7 +1155,7 @@ function openWeek(index) {
    celular puede destapar el contenido sin permiso.
    ============================================================ */
 function hasPin() {
-  return !!(state.adminPin && state.adminPin.length === 4);
+  return !!(groupData.adminPin && groupData.adminPin.length === 4);
 }
 
 // pinPendingAction: { type: 'activate', weekIndex } | { type: 'admin' }
@@ -865,10 +1237,10 @@ document.getElementById('pinConfirmBtn').addEventListener('click', () => {
       errorEl.style.display = 'block';
       return;
     }
-    state.adminPin = val;
-    saveState();
+    groupData.adminPin = val;
+    fref('grupos/' + identity.groupCode + '/adminPin').set(val);
   } else {
-    if (val !== state.adminPin) {
+    if (val !== groupData.adminPin) {
       errorEl.textContent = 'PIN incorrecto, probá de nuevo.';
       errorEl.style.display = 'block';
       pinInput.value = '';
@@ -886,59 +1258,73 @@ document.getElementById('pinConfirmBtn').addEventListener('click', () => {
   }
 
   const idx = action.weekIndex;
-  const w = WEEKS[idx];
-  const p = weekProgress(w.id);
-  p.activated = true;
-  saveState();
+  activateWeek(WEEKS[idx].id);
   openWeek(idx);
 });
 
 document.getElementById('forgotPinBtn').addEventListener('click', () => {
   const ok = confirm('Esto borra el PIN actual — cualquiera podrá crear uno nuevo después. ¿Continuar?');
   if (!ok) return;
-  state.adminPin = '';
-  saveState();
+  groupData.adminPin = '';
+  fref('grupos/' + identity.groupCode + '/adminPin').set('');
   showPinCard(pinPendingAction);
 });
 
 /* ============================================================
    PANEL DEL ADMINISTRADOR
    ============================================================ */
+function rosterEntries() {
+  const membersObj = groupData.miembros || {};
+  return Object.keys(membersObj)
+    .map(mid => ({ id: mid, nombre: membersObj[mid].nombre || '(sin nombre)', unidoEn: membersObj[mid].unidoEn }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+}
+
 function renderMembersList() {
   const list = document.getElementById('membersList');
-  if (state.members.length === 0) {
-    list.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía no agregaste a nadie.</div>';
+  const entries = rosterEntries();
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía no se unió nadie con el código.</div>';
     return;
   }
   list.innerHTML = '';
-  state.members.forEach(m => {
+  entries.forEach(m => {
     const row = document.createElement('div');
     row.className = 'member-row';
     row.innerHTML = '<span class="mname">' + escapeHtml(m.nombre) + '</span><button type="button" class="rm-btn">Quitar</button>';
     row.querySelector('.rm-btn').addEventListener('click', () => {
-      state.members = state.members.filter(x => x.id !== m.id);
-      saveState();
-      renderMembersList();
-      renderAdminWeekSummary();
+      const ok = confirm('¿Quitar a ' + m.nombre + ' de la familia?');
+      if (!ok) return;
+      fref('grupos/' + identity.groupCode + '/miembros/' + m.id).remove();
     });
     list.appendChild(row);
   });
 }
 
-document.getElementById('addMemberBtn').addEventListener('click', () => {
+document.getElementById('addMemberBtn').addEventListener('click', async () => {
   const input = document.getElementById('newMemberInput');
   const nombre = input.value.trim();
   if (!nombre) return;
-  state.members.push({ id: 'm' + Date.now() + Math.floor(Math.random() * 1000), nombre: nombre });
-  saveState();
+  const memberId = 'm' + Date.now() + Math.floor(Math.random() * 1000);
+  const entry = { nombre: nombre, unidoEn: new Date().toISOString(), agregadoPorAdmin: true };
+  patchLocal('miembros/' + memberId, entry);
+  await fref('grupos/' + identity.groupCode + '/miembros/' + memberId).set(entry);
   input.value = '';
   renderMembersList();
   renderAdminWeekSummary();
 });
 
+function currentAdminWeekIndex() {
+  let idx = -1;
+  WEEKS.forEach((w, i) => {
+    if (groupData.semanas && groupData.semanas[w.id] && groupData.semanas[w.id].activated) idx = i;
+  });
+  return idx;
+}
+
 function renderAdminWeekSummary() {
   const container = document.getElementById('adminWeekSummary');
-  const idx = WEEKS.findIndex((w, i) => weekStatus(i) === 'current');
+  const idx = currentAdminWeekIndex();
   if (idx === -1) {
     container.innerHTML = '<div class="empty-note" style="padding:10px 4px;">No hay ninguna semana activa en este momento.</div>';
     return;
@@ -946,18 +1332,79 @@ function renderAdminWeekSummary() {
   const w = WEEKS[idx];
   const p = weekProgress(w.id);
   const doneDays = DAYS_RETO.filter(d => p.dailyChecks && p.dailyChecks[d.key]).length;
+  const entries = rosterEntries();
+  const semanaMiembros = (groupData.semanas && groupData.semanas[w.id] && groupData.semanas[w.id].miembros) || {};
+
+  let rows = '';
+  if (entries.length === 0) {
+    rows = '<tr><td colspan="2" style="text-align:center; color:var(--muted); padding:14px 0;">Todavía no hay nadie en la familia.</td></tr>';
+  } else {
+    rows = entries.map(m => {
+      const done = !!(semanaMiembros[m.id] && semanaMiembros[m.id].individualDone);
+      return '<tr>' +
+        '<td>' + escapeHtml(m.nombre) + '</td>' +
+        '<td><span class="admin-toggle" data-member="' + m.id + '" style="cursor:pointer;">' + (done ? '✅' : '⬜') + '</span></td>' +
+        '</tr>';
+    }).join('');
+  }
 
   container.innerHTML =
     '<div style="font-weight:700; font-size:14px; color:var(--teal-deep); margin-bottom:8px;">Semana ' + (idx + 1) + ' · ' + escapeHtml(w.tema) + '</div>' +
     '<div style="font-size:13px; margin-bottom:4px;">Dinámica del lunes: ' + (p.mondayDone ? '✅ hecha' : '⬜ pendiente') + '</div>' +
-    '<div style="font-size:13px; margin-bottom:10px;">Días marcados (mar-vie): ' + doneDays + ' de ' + DAYS_RETO.length + '</div>' +
-    '<div class="section-title" style="margin-top:6px;">Desafío individual, por integrante</div>' +
-    '<div id="adminMemberChecklist"></div>';
+    '<div style="font-size:13px; margin-bottom:14px;">Días marcados (mar-vie): ' + doneDays + ' de ' + DAYS_RETO.length + '</div>' +
+    '<div class="section-title">Desafío individual, por integrante</div>' +
+    '<table class="admin-table"><thead><tr><th>Nombre</th><th>Reto</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<p style="font-size:11px; color:var(--muted); margin:8px 0 0;">Tocá el casillero para marcarlo o desmarcarlo — útil para integrantes que todavía no tienen su propio celular.</p>';
 
-  renderMemberChecklist('adminMemberChecklist', p);
+  container.querySelectorAll('.admin-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      const mid = el.dataset.member;
+      const current = !!(semanaMiembros[mid] && semanaMiembros[mid].individualDone);
+      writeMemberField(w.id, mid, 'individualDone', !current);
+      renderAdminWeekSummary();
+    });
+  });
+}
+
+function renderAdminCode() {
+  document.getElementById('adminCodeValue').textContent = identity.groupCode;
+}
+
+// Acción rápida del panel: activar de un toque la próxima semana lista,
+// sin tener que ir hasta su tarjeta en el mapa — el equivalente acá de
+// "Crear nueva partida" en la trivia en vivo.
+function renderAdminStartWeek() {
+  const text = document.getElementById('adminStartWeekText');
+  const btn = document.getElementById('startWeekBtn');
+  const currentIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'current');
+  if (currentIdx !== -1) {
+    const w = WEEKS[currentIdx];
+    text.textContent = 'Semana ' + (currentIdx + 1) + ' · ' + w.tema + ' — ya está en curso. Compartí el código de abajo para que se sumen.';
+    btn.hidden = true;
+    return;
+  }
+  const readyIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'ready');
+  if (readyIdx !== -1) {
+    const w = WEEKS[readyIdx];
+    text.textContent = 'Semana ' + (readyIdx + 1) + ' · ' + w.tema + ' — lista para comenzar.';
+    btn.hidden = false;
+    btn.onclick = () => {
+      activateWeek(w.id);
+      renderAdminStartWeek();
+      renderAdminWeekSummary();
+    };
+    return;
+  }
+  btn.hidden = true;
+  const hasAnyDone = WEEKS.some((w, i) => weekStatus(i) === 'done');
+  text.textContent = (hasAnyDone && WEEKS.length)
+    ? '¡Ya completaron todas las semanas cargadas! Avisale a quien te ayuda con la app cuando quieran la próxima.'
+    : 'Todavía no hay ninguna semana lista para comenzar (esperando su fecha, o falta cerrar la anterior).';
 }
 
 function openAdminPanel() {
+  renderAdminCode();
+  renderAdminStartWeek();
   renderMembersList();
   renderAdminWeekSummary();
   showScreen('admin');
@@ -966,6 +1413,12 @@ function openAdminPanel() {
 document.getElementById('backFromAdminBtn').addEventListener('click', () => {
   renderMap();
   showScreen('home');
+});
+
+document.getElementById('shareCodeBtn').addEventListener('click', () => {
+  const url = location.href.split('#')[0].split('?')[0] + '?code=' + identity.groupCode;
+  const msg = 'Te invito a la Aventura de Fe de nuestra familia (Ven, Sígueme). Tocá este link y escribí tu nombre para unirte:\n' + url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 });
 
 function renderAgeContent(w) {
@@ -1022,18 +1475,15 @@ document.getElementById('listenBtn').addEventListener('click', () => {
 
 document.getElementById('dynamicDone').addEventListener('change', (e) => {
   const w = WEEKS[activeWeekIndex];
-  const p = weekProgress(w.id);
-  p.mondayDone = e.target.checked;
-  saveState();
-  renderDayTabs(w, p);
+  writeShared(w.id, 'mondayDone', e.target.checked);
+  renderDayTabs(w, weekProgress(w.id));
   renderMap();
 });
 
 document.getElementById('startChallengeBtn').addEventListener('click', () => {
   const w = WEEKS[activeWeekIndex];
+  writeShared(w.id, 'mondayDone', true);
   const p = weekProgress(w.id);
-  p.mondayDone = true;
-  saveState();
   renderDayTabs(w, p);
   activeDay = 'retos';
   showDayPanel('retos', w, p);
@@ -1055,9 +1505,8 @@ function renderDayStrip(w, p) {
     chip.className = 'day-chip' + (done ? ' done' : '');
     chip.innerHTML = '<div class="dname">' + d.label + '</div><div class="dcheck">' + (done ? '✅' : '⬜') + '</div>';
     chip.addEventListener('click', () => {
-      p.dailyChecks[d.key] = !p.dailyChecks[d.key];
-      saveState();
-      renderDayStrip(w, p);
+      writeShared(w.id, 'dailyChecks/' + d.key, !done);
+      renderDayStrip(w, weekProgress(w.id));
     });
     strip.appendChild(chip);
   });
@@ -1072,33 +1521,30 @@ function renderIndividualOptions(w) {
 
 /* ============================================================
    SEGUIMIENTO POR INTEGRANTE
-   Cada integrante marca su propia casilla cuando cumple su
-   desafío individual de la semana. El administrador ve el mismo
-   listado desde su panel, para saber a quién recordarle.
+   Cada integrante marca su propia casilla, desde su propio
+   celular, cuando cumple su desafío individual de la semana. El
+   resto de la familia solo ve un conteo agregado; el detalle por
+   nombre queda en el Panel del administrador.
    ============================================================ */
-function renderMemberChecklist(containerId, p) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!p.individualChecks) p.individualChecks = {};
-  if (state.members.length === 0) {
-    el.innerHTML = '<div class="empty-note" style="padding:14px 4px;">Todavía no hay integrantes cargados. Se agregan desde el Panel del administrador (🛡️, en el mapa).</div>';
-    return;
-  }
-  el.innerHTML = '';
-  state.members.forEach(m => {
-    const row = document.createElement('div');
-    row.className = 'check-row';
-    row.style.marginTop = '8px';
-    const inputId = containerId + '-chk-' + m.id;
-    const checked = !!p.individualChecks[m.id];
-    row.innerHTML = '<input type="checkbox" id="' + inputId + '"' + (checked ? ' checked' : '') + '><label for="' + inputId + '">' + escapeHtml(m.nombre) + '</label>';
-    row.querySelector('input').addEventListener('change', (e) => {
-      p.individualChecks[m.id] = e.target.checked;
-      saveState();
-    });
-    el.appendChild(row);
-  });
+function renderMyChallenge(weekId) {
+  const check = document.getElementById('myIndividualCheck');
+  const countEl = document.getElementById('groupChallengeCount');
+  if (!check || !countEl) return;
+  const p = weekProgress(weekId);
+  check.checked = !!p.individualDone;
+
+  const entries = rosterEntries();
+  const semanaMiembros = (groupData.semanas && groupData.semanas[weekId] && groupData.semanas[weekId].miembros) || {};
+  const doneCount = entries.filter(m => semanaMiembros[m.id] && semanaMiembros[m.id].individualDone).length;
+  countEl.textContent = entries.length <= 1
+    ? '¡Podés ser el primero en cumplirlo esta semana! 💪'
+    : doneCount + ' de ' + entries.length + ' ya cumplieron su desafío esta semana 💪';
 }
+document.getElementById('myIndividualCheck').addEventListener('change', (e) => {
+  const w = WEEKS[activeWeekIndex];
+  writeMine(w.id, 'individualDone', e.target.checked);
+  renderMyChallenge(w.id);
+});
 
 const CLOSING_EMOJIS = ['😊', '🙏', '❤️', '😭', '💪', '✨', '🤗', '😅'];
 function renderEmojiRow(p) {
@@ -1139,15 +1585,16 @@ document.getElementById('closeWeekBtn').addEventListener('click', () => {
   const p = weekProgress(w.id);
   const row = document.getElementById('emojiRow');
   const note = document.getElementById('closingNote').value.trim();
-  p.closing = {
+  const closing = {
     emoji: row.dataset.selected || '',
     note: note,
     photo: pendingPhotoDataUrl || (p.closing && p.closing.photo) || null,
+    closedBy: identity.nombre,
     closedAt: new Date().toISOString(),
   };
-  p.badgeAwarded = true;
+  writeShared(w.id, 'closing', closing);
+  writeShared(w.id, 'badgeAwarded', true);
   pendingPhotoDataUrl = null;
-  saveState();
   renderTopbar();
   showBadgeReveal(w);
 });
@@ -1194,8 +1641,8 @@ function showDayPanel(day, w, p) {
 function renderJournal() {
   const list = document.getElementById('journalList');
   const entries = WEEKS
-    .map((w, i) => ({ w, i, p: state.progress[w.id] }))
-    .filter(e => e.p && e.p.closing)
+    .map((w, i) => ({ w, i, p: weekProgress(w.id) }))
+    .filter(e => e.p.closing)
     .sort((a, b) => new Date(b.p.closing.closedAt) - new Date(a.p.closing.closedAt));
 
   if (entries.length === 0) {
@@ -1208,7 +1655,7 @@ function renderJournal() {
     return '<div class="journal-entry">' +
       '<div class="jhead"><span class="jemoji">' + e.w.insignia.emoji + '</span>' +
         '<div><div class="jtitle">Semana ' + (e.i + 1) + ' · ' + escapeHtml(e.w.tema) + '</div>' +
-        '<div class="jdate">' + dateStr + '</div></div></div>' +
+        '<div class="jdate">' + dateStr + (e.p.closing.closedBy ? ' · cerrada por ' + escapeHtml(e.p.closing.closedBy) : '') + '</div></div></div>' +
       '<div class="jphrase">' + escapeHtml(e.w.frasePararecordar) + '</div>' +
       (e.p.closing.emoji ? '<div style="font-size:20px;">' + e.p.closing.emoji + '</div>' : '') +
       (e.p.closing.note ? '<div class="jnote">' + escapeHtml(e.p.closing.note) + '</div>' : '') +
@@ -1231,9 +1678,33 @@ document.getElementById('viewJournalFromBadgeBtn').addEventListener('click', () 
    ============================================================ */
 wireAgeTabs();
 wireConvTabs();
-renderTopbar();
-renderMap();
-showScreen('home');
+
+// Si alguien llega desde un link de invitación (?code=XXXXXX, generado por
+// "Compartir por WhatsApp" en el panel del administrador), va directo a
+// unirse con ese código — nunca ve la opción de crear una familia nueva.
+function getUrlCode() {
+  try {
+    const c = (new URLSearchParams(location.search).get('code') || '').trim().toUpperCase();
+    return /^[A-Z0-9]{4,10}$/.test(c) ? c : '';
+  } catch (e) { return ''; }
+}
+const urlCode = getUrlCode();
+
+if (identity && identity.groupCode && identity.memberId) {
+  document.getElementById('screenJoin').hidden = true;
+  startApp();
+} else if (urlCode) {
+  document.querySelector('#screenJoin .join-toggle').hidden = true;
+  document.getElementById('createForm').hidden = true;
+  document.getElementById('joinForm').hidden = false;
+  const codeInput = document.getElementById('joinCodeInput');
+  codeInput.value = urlCode;
+  codeInput.readOnly = true;
+  codeInput.style.background = 'var(--cream-deep)';
+  document.querySelector('#joinForm .join-note').textContent =
+    'Te invitaron a unirte a la Aventura de Fe de tu familia (código ' + urlCode + '). Escribí tu nombre para empezar.';
+  document.getElementById('joinNameInput').focus();
+}
 
 })();
 </script>
