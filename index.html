@@ -394,10 +394,10 @@
     <div class="journal-link">
       <button id="openJournalBtn">📖 Ver el Diario Familiar</button>
     </div>
-    <div class="journal-link">
+    <div class="journal-link" id="adminLinkRow">
       <button id="openAdminBtn">🛡️ Panel del administrador</button>
     </div>
-    <div class="journal-link" style="margin-top:14px;">
+    <div class="journal-link" id="jasCrossLinkRow" style="margin-top:14px;">
       <a href="aventura-jas.html" style="color:var(--muted); font-size:12px; text-decoration:underline;">🧑‍🤝‍🧑 ¿Sos parte del grupo JAS? Abrí Aventura JAS</a>
     </div>
   </div>
@@ -1018,6 +1018,11 @@ function onGroupDataChange() {
     document.getElementById('appRoot').hidden = false;
     document.getElementById('userGreeting').textContent = identity.nombre;
     document.getElementById('userGroupCode').textContent = identity.groupCode;
+    // Los que se unen como participantes (no el anfitrión/a) no ven el
+    // acceso al Panel del administrador ni el link cruzado a Aventura JAS
+    // en el mapa — solo el Diario Familiar.
+    document.getElementById('adminLinkRow').hidden = !identity.isHost;
+    document.getElementById('jasCrossLinkRow').hidden = !identity.isHost;
     renderTopbar();
     renderMap();
     showScreen('home');
