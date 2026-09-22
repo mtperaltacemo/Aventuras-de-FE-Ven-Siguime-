@@ -409,6 +409,9 @@
     <div class="journal-link" id="jasCrossLinkRow" style="margin-top:14px;">
       <a href="aventura-jas.html" style="color:var(--muted); font-size:12px; text-decoration:underline;">🧑‍🤝‍🧑 ¿Sos parte del grupo JAS? Abrí Aventura JAS</a>
     </div>
+    <div class="journal-link" id="adminRecoverRow" style="margin-top:14px;">
+      <a href="#" id="adminRecoverLink" style="color:var(--muted); font-size:12px; text-decoration:underline;">🔑 ¿Sos el papá o la mamá que organiza? Ingresá el PIN acá</a>
+    </div>
   </div>
 
   <!-- ============ WEEK VIEW ============ -->
@@ -1029,9 +1032,13 @@ function onGroupDataChange() {
     document.getElementById('userGroupCode').textContent = identity.groupCode;
     // Los que se unen como participantes (no el anfitrión/a) no ven el
     // acceso al Panel del administrador ni el link cruzado a Aventura JAS
-    // en el mapa — solo el Diario Familiar.
+    // en el mapa — solo el Diario Familiar. Si este celular no quedó marcado
+    // como anfitrión (por ejemplo, un grupo creado antes de esta función, o
+    // un segundo celular del papá/mamá), se le muestra en su lugar un link
+    // chiquito para recuperar el acceso ingresando el PIN.
     document.getElementById('adminLinkRow').hidden = !identity.isHost;
     document.getElementById('jasCrossLinkRow').hidden = !identity.isHost;
+    document.getElementById('adminRecoverRow').hidden = !!identity.isHost;
     renderTopbar();
     renderMap();
     showScreen('home');
@@ -1220,6 +1227,11 @@ document.getElementById('openAdminBtn').addEventListener('click', () => {
   showPinCard({ type: 'admin' });
 });
 
+document.getElementById('adminRecoverLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  showPinCard({ type: 'admin' });
+});
+
 document.getElementById('pinCancelBtn').addEventListener('click', () => {
   const wasAdmin = pinPendingAction && pinPendingAction.type === 'admin';
   hidePinCard();
@@ -1267,6 +1279,17 @@ document.getElementById('pinConfirmBtn').addEventListener('click', () => {
   hidePinCard();
 
   if (action.type === 'admin') {
+    // Quien sabe el PIN es, en la práctica, el anfitrión/a — aunque este
+    // celular no lo tuviera marcado (grupo creado antes de esta función, o
+    // un segundo celular del papá/mamá). Se lo marca ahora para que el
+    // Panel del administrador y el link cruzado queden visibles de ahí en más.
+    if (!identity.isHost) {
+      identity.isHost = true;
+      saveIdentity(identity);
+      document.getElementById('adminLinkRow').hidden = false;
+      document.getElementById('jasCrossLinkRow').hidden = false;
+      document.getElementById('adminRecoverRow').hidden = true;
+    }
     openAdminPanel();
     return;
   }

@@ -395,6 +395,9 @@
       <div class="journal-link" id="defeCrossLinkRow" style="margin-top:14px;">
         <a href="index.html" style="color:var(--muted); font-size:12px; text-decoration:underline;">👪 ¿Buscás la versión para tu familia? Abrí Aventura de Fe</a>
       </div>
+      <div class="journal-link" id="adminRecoverRow" style="margin-top:14px;">
+        <a href="#" id="adminRecoverLink" style="color:var(--muted); font-size:12px; text-decoration:underline;">🔑 ¿Sos el líder de este grupo? Ingresá el PIN acá</a>
+      </div>
     </div>
 
     <!-- ============ WEEK VIEW ============ -->
@@ -885,9 +888,13 @@ function onGroupDataChange() {
     document.getElementById('userGroupCode').textContent = identity.groupCode;
     // Quienes se unen como participantes (no quien creó el grupo) no ven el
     // acceso al Panel del administrador ni el link cruzado a Aventura de Fe
-    // en el mapa — solo su Diario.
+    // en el mapa — solo su Diario. Si este celular no quedó marcado como
+    // líder (grupo creado antes de esta función, o un segundo celular del
+    // líder), se le muestra en su lugar un link chiquito para recuperar el
+    // acceso ingresando el PIN.
     document.getElementById('adminLinkRow').hidden = !identity.isHost;
     document.getElementById('defeCrossLinkRow').hidden = !identity.isHost;
+    document.getElementById('adminRecoverRow').hidden = !!identity.isHost;
     renderTopbar();
     renderMap();
     showScreen('home');
@@ -1154,6 +1161,10 @@ document.getElementById('activateWeekBtn').addEventListener('click', () => {
 document.getElementById('openAdminBtn').addEventListener('click', () => {
   showPinCard({ type: 'admin' });
 });
+document.getElementById('adminRecoverLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  showPinCard({ type: 'admin' });
+});
 document.getElementById('resetPinBtn').addEventListener('click', () => {
   const ok = confirm('Esto borra el PIN actual para todo el grupo — cualquiera podrá crear uno nuevo después. ¿Continuar?');
   if (!ok) return;
@@ -1207,6 +1218,17 @@ document.getElementById('pinConfirmBtn').addEventListener('click', () => {
   hidePinCard();
 
   if (action.type === 'admin') {
+    // Quien sabe el PIN es, en la práctica, el líder del grupo — aunque este
+    // celular no lo tuviera marcado (grupo creado antes de esta función, o
+    // un segundo celular del líder). Se lo marca ahora para que el Panel del
+    // administrador y el link cruzado queden visibles de ahí en más.
+    if (!identity.isHost) {
+      identity.isHost = true;
+      saveIdentity(identity);
+      document.getElementById('adminLinkRow').hidden = false;
+      document.getElementById('defeCrossLinkRow').hidden = false;
+      document.getElementById('adminRecoverRow').hidden = true;
+    }
     openAdminPanel();
     return;
   }
