@@ -554,7 +554,7 @@
           <div class="code-value" id="adminCodeValue">——————</div>
           <div class="code-hint">Compartilo con el grupo JAS — recién pueden entrar una vez que comenzaste la semana</div>
         </div>
-        <button class="cta-btn small secondary" id="shareCodeBtn">📤 Compartir por WhatsApp</button>
+        <button class="cta-btn small secondary" id="shareCodeBtn">🔗 Copiar link de invitación</button>
       </div>
 
       <div class="card">
@@ -1346,10 +1346,40 @@ document.getElementById('backFromAdminBtn').addEventListener('click', () => {
   showScreen('home');
 });
 
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback para navegadores/webviews sin Clipboard API
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      resolve();
+    } catch (e) {
+      reject(e);
+    } finally {
+      document.body.removeChild(ta);
+    }
+  });
+}
+
 document.getElementById('shareCodeBtn').addEventListener('click', () => {
+  const btn = document.getElementById('shareCodeBtn');
   const url = location.href.split('#')[0].split('?')[0] + '?code=' + identity.groupCode;
-  const msg = 'Únite a nuestro grupo de Aventura JAS (Ven, Sígueme). Tocá este link y escribí tu nombre para unirte:\n' + url;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  const original = btn.textContent;
+  copyToClipboard(url).then(() => {
+    btn.textContent = '✅ ¡Link copiado!';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  }).catch(() => {
+    window.prompt('No se pudo copiar solo — copiá este link a mano:', url);
+  });
 });
 
 /* ============================================================
@@ -1573,7 +1603,7 @@ document.getElementById('viewJournalFromBadgeBtn').addEventListener('click', () 
    INIT
    ============================================================ */
 // Si alguien llega desde un link de invitación (?code=XXXXXX, generado por
-// "Compartir por WhatsApp" en el panel del administrador), va directo a
+// "Copiar link de invitación" en el panel del administrador), va directo a
 // unirse con ese código — nunca ve la opción de crear un grupo nuevo.
 function getUrlCode() {
   try {
