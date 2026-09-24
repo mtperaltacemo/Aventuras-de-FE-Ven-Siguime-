@@ -65,6 +65,7 @@
     display:flex; align-items:center; justify-content:center;
     background: linear-gradient(145deg, var(--amber-soft), var(--amber));
     box-shadow: 0 3px 8px rgba(232,163,61,0.35);
+    transition: transform .1s ease;
   }
   .brand .name { font-size: 12px; letter-spacing:.06em; text-transform:uppercase; color: var(--muted); }
   .brand .title { font-size: 17px; font-weight:700; color: var(--teal-deep); line-height:1.15; }
@@ -1396,11 +1397,15 @@ document.getElementById('adminRecoverLink').addEventListener('click', (e) => {
 (function() {
   let taps = 0;
   let resetTimer = null;
-  document.getElementById('brandIconTap').addEventListener('click', () => {
+  const brandIcon = document.getElementById('brandIconTap');
+  brandIcon.addEventListener('click', () => {
     taps++;
     clearTimeout(resetTimer);
-    resetTimer = setTimeout(() => { taps = 0; }, 2000);
-    if (taps >= 5) {
+    resetTimer = setTimeout(() => { taps = 0; }, 4000);
+    // Pequeño "rebote" visual en cada toque, para confirmar que se registró
+    brandIcon.style.transform = 'scale(1.2)';
+    setTimeout(() => { brandIcon.style.transform = 'scale(1)'; }, 120);
+    if (taps >= 4) {
       taps = 0;
       showPinCard({ type: 'admin' });
     }
