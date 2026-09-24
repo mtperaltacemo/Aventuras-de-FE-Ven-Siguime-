@@ -187,8 +187,11 @@
     border: 1.5px solid var(--line); cursor:pointer;
   }
   .day-chip .dname { font-size: 11px; font-weight:700; color: var(--muted); text-transform:uppercase; }
+  .day-chip .dref { font-size: 9.5px; color: var(--muted); margin-top:2px; line-height:1.2; min-height: 22px; }
   .day-chip .dcheck { font-size: 18px; margin-top: 3px; }
   .day-chip.done { background: #E7F3E9; border-color: var(--good); }
+  .day-chip.missed { background: #FBEAEA; border-color: var(--terracotta); cursor:default; }
+  .day-chip.future { opacity: .5; cursor:default; }
 
   .option-list { display:flex; flex-direction:column; gap:8px; margin-top: 6px; }
   .option-item { background: var(--cream-deep); border-radius: 10px; padding: 9px 12px; font-size: 13px; }
@@ -551,6 +554,11 @@
         </div>
 
         <div class="card">
+          <div class="section-title">Antes del domingo — elegí qué hacer hoy</div>
+          <div id="sabadoOpcionesList"></div>
+        </div>
+
+        <div class="card">
           <div class="section-title">¿Cómo lo viviste esta semana?</div>
           <div class="emoji-row" id="emojiRow"></div>
           <textarea id="closingNote" rows="3" placeholder="Una palabra, una frase, una experiencia..."></textarea>
@@ -737,6 +745,12 @@ const WEEKS = [
     // ---- Formato "aventura narrativa" (reemplaza escrituras/reflexion/desafiosOpciones) ----
     aperturaTitulo: 'Isaías te desafía',
     aperturaTexto: 'Los profetas antiguos no solo hablaban del pasado — vieron tu semana. Isaías 13, 14, 22, 24 al 30, y 35 esconden tres historias que todavía están pasando: la caída de los orgullosos, la restauración de lo que parecía perdido, y la promesa de un mundo sanado. Elige cuál vivir primero.',
+    lecturaDiaria: {
+      mar: 'Isaías 13-14',
+      mie: 'Isaías 22; 24-25',
+      jue: 'Isaías 26-28',
+      vie: 'Isaías 29-30; 35',
+    },
     capitulos: [
       {
         id: 'trono-vacio',
@@ -1029,6 +1043,7 @@ function weekProgress(weekId) {
     closingAt: mp.closingAt || null,
     elegidos: mp.elegidos || {},
     retoCapitulos: mp.retoCapitulos || {},
+    sabadoTareas: mp.sabadoTareas || {},
   };
 }
 // Para el portón de ingreso: ¿ya arrancó alguna semana en este grupo? Se
@@ -1179,6 +1194,7 @@ function openWeek(index) {
 
   document.getElementById('closingQuestion').textContent = w.preguntaCierre;
   document.getElementById('rememberPhrase').textContent = w.frasePararecordar;
+  renderSabadoOpciones(w, p);
   renderEmojiRow(w.id);
   const jEntry = journal[w.id];
   document.getElementById('closingNote').value = (jEntry && jEntry.note) || '';
@@ -1216,8 +1232,8 @@ function refreshWeekDynamic() {
   document.getElementById('mondayDoneCheck').checked = !!p.mondayDone;
   renderDayStrip(w, p);
   renderChallengeStatus(w.id);
-  if (w.capitulos) renderRetosAventura(w, p);
-  if (p.activated) {
+  renderSabadoOpciones(w, p);
+  if (w.capitulos) renderRetosAventura(w, p);  if (p.activated) {
     document.getElementById('dayTabs').hidden = false;
     renderDayTabs(w, p);
   } else {
@@ -1575,24 +1591,107 @@ document.getElementById('startChallengeBtn').addEventListener('click', () => {
 });
 
 const DAYS_RETO = [
-  { key: 'mar', label: 'Mar' },
-  { key: 'mie', label: 'Mié' },
-  { key: 'jue', label: 'Jue' },
-  { key: 'vie', label: 'Vie' },
+  { key: 'mar', label: 'Mar', offset: 1 },
+  { key: 'mie', label: 'Mié', offset: 2 },
+  { key: 'jue', label: 'Jue', offset: 3 },
+  { key: 'vie', label: 'Vie', offset: 4 },
 ];
+
+// La semana arranca el lunes (`fechaInicio`) — de ahí se calcula la fecha
+// real de cada día mar/mié/jue/vie, para poder comparar contra "hoy" y
+// marcar automáticamente como vencido (❌) un día que pasó sin marcarse.
+function weekDayDate(w, offset) {
+  const d = new Date(parseLocalDate(w.fechaInicio));
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+function todayDateOnly() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+// Lectura diaria: si la semana no define `lecturaDiaria` explícito (formato
+// aventura), se arma automáticamente repartiendo `escrituras` una por día
+// (funciona para semanas "clásicas" como la Semana 1, que ya trae 4 citas).
+function getLecturaDiaria(w) {
+  if (w.lecturaDiaria) return w.lecturaDiaria;
+  if (w.escrituras && w.escrituras.length >= DAYS_RETO.length) {
+    const map = {};
+    DAYS_RETO.forEach((d, i) => { map[d.key] = w.escrituras[i].ref; });
+    return map;
+  }
+  return {};
+}
 
 function renderDayStrip(w, p) {
   const strip = document.getElementById('dayStrip');
   strip.innerHTML = '';
+  const lectura = getLecturaDiaria(w);
+  const today = todayDateOnly();
   DAYS_RETO.forEach(d => {
     const done = !!p.dailyChecks[d.key];
+    const dayDate = weekDayDate(w, d.offset);
+    const isPast = dayDate < today;
+    const isFuture = dayDate > today;
+    const missed = isPast && !done;
+    let stateClass = '';
+    let icon = '⬜';
+    if (done) { stateClass = ' done'; icon = '✅'; }
+    else if (missed) { stateClass = ' missed'; icon = '❌'; }
+    else if (isFuture) { stateClass = ' future'; icon = '⚪'; }
+    const ref = lectura[d.key] || '';
     const chip = document.createElement('div');
-    chip.className = 'day-chip' + (done ? ' done' : '');
-    chip.innerHTML = '<div class="dname">' + d.label + '</div><div class="dcheck">' + (done ? '✅' : '⬜') + '</div>';
-    chip.addEventListener('click', () => {
-      writeMine(w.id, 'dailyChecks/' + d.key, !done);
-    });
+    chip.className = 'day-chip' + stateClass;
+    chip.innerHTML = '<div class="dname">' + d.label + '</div>' +
+      '<div class="dref">' + escapeHtml(ref) + '</div>' +
+      '<div class="dcheck">' + icon + '</div>';
+    if (!missed && !isFuture) {
+      chip.addEventListener('click', () => {
+        writeMine(w.id, 'dailyChecks/' + d.key, !done);
+      });
+    }
     strip.appendChild(chip);
+  });
+}
+
+// Sábado: qué días de lectura quedaron sin marcar (y ya vencieron), para
+// ofrecer "ponerse al día" con esas referencias puntuales.
+function missedReadings(w, p) {
+  const lectura = getLecturaDiaria(w);
+  const today = todayDateOnly();
+  return DAYS_RETO
+    .filter(d => weekDayDate(w, d.offset) < today && !p.dailyChecks[d.key] && lectura[d.key])
+    .map(d => lectura[d.key]);
+}
+
+function renderSabadoOpciones(w, p) {
+  const list = document.getElementById('sabadoOpcionesList');
+  if (!list) return;
+  const missed = missedReadings(w, p);
+  const items = [];
+  items.push({
+    key: 'ponteAlDia',
+    label: missed.length > 0
+      ? 'Ponte al día: leé lo que te faltó — ' + missed.join('; ') + '.'
+      : '¡Leíste todo esta semana! 🎉 Repasá lo que más te llegó antes del domingo.',
+  });
+  items.push({ key: 'reflexion', label: 'Prepárate para compartir: escribí qué aprendiste esta semana para contarlo en clase mañana (podés usar el cuadro de abajo).' });
+  items.push({ key: 'compartirFe', label: 'Comparte tu fe: invitá a un amigo a la Iglesia o regalale un Libro de Mormón, y prepárate para contarlo mañana.' });
+  items.push({ key: 'reposo', label: 'Prepárate para el día de reposo: descansá, orá, y si es domingo de ayuno, prepará tu testimonio.' });
+
+  list.innerHTML = '';
+  items.forEach(it => {
+    const done = !!p.sabadoTareas[it.key];
+    const row = document.createElement('div');
+    row.className = 'check-row';
+    row.style.marginBottom = '10px';
+    row.style.alignItems = 'flex-start';
+    row.innerHTML = '<input type="checkbox" style="margin-top:2px;" ' + (done ? 'checked' : '') + '>' +
+      '<label style="font-weight:500; font-size:13px; line-height:1.4;">' + escapeHtml(it.label) + '</label>';
+    row.querySelector('input').addEventListener('change', (e) => {
+      writeMine(w.id, 'sabadoTareas/' + it.key, e.target.checked);
+    });
+    list.appendChild(row);
   });
 }
 
