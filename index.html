@@ -160,10 +160,11 @@
     padding: 6px 12px; font-size: 12.5px; cursor:pointer; color: var(--teal);
   }
 
-  .age-tabs { display:flex; gap:6px; margin: 10px 0 8px; }
+  .age-tabs { display:flex; gap:5px; margin: 10px 0 8px; }
   .age-tab {
-    flex:1; text-align:center; padding: 8px 4px; border-radius: 10px; font-size: 12px; font-weight:700;
+    flex:1; text-align:center; padding: 7px 2px; border-radius: 10px; font-size: 10.5px; font-weight:700;
     background: var(--cream-deep); color: var(--muted); cursor:pointer; border:1px solid var(--line);
+    line-height: 1.25;
   }
   .age-tab.active { background: var(--amber-soft); color: var(--terracotta); border-color: var(--amber); }
   .age-content { font-size: 13.5px; line-height:1.5; padding: 4px 2px; }
@@ -313,6 +314,24 @@
     <div class="loading-note">Conectando con tu familia…</div>
   </div>
 
+  <!-- ============ SELECCIÓN DE NIVEL (una sola vez por persona) ============ -->
+  <div id="screenNivel" hidden>
+    <div class="topbar">
+      <div class="brand">
+        <span class="icon">👪</span>
+        <div>
+          <div class="name">Aventura de Fe</div>
+          <div class="title">Ven, Sígueme</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">¿Quién sos vos?</div>
+      <p class="join-note">Elegí tu edad para que la app te muestre la historia, la escritura y el desafío justo para vos. Podés cambiarlo después con el link "Cambiar nivel".</p>
+      <div id="nivelCards" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+
   <!-- ============ APP (una vez que hay identidad y llegaron los datos) ============ -->
   <div id="appRoot" hidden>
 
@@ -329,6 +348,7 @@
 
   <div class="userRow" id="userRow">
     👋 <span id="userGreeting"></span> · Código: <span class="groupCode" id="userGroupCode"></span>
+    <button type="button" class="leaveLink" id="changeNivelBtn">Cambiar nivel</button>
     <button type="button" class="leaveLink" id="leaveGroupBtn">Salir</button>
   </div>
 
@@ -443,13 +463,22 @@
       </div>
 
       <div class="card">
-        <div class="section-title">Para cada edad</div>
-        <div class="age-tabs">
-          <div class="age-tab active" data-age="ninos">Niño escucha</div>
-          <div class="age-tab" data-age="jovenes">Joven lee</div>
-          <div class="age-tab" data-age="adultos">Adulto profundiza</div>
+        <div class="section-title">La historia de esta semana</div>
+        <div class="age-tabs" id="ageTabs">
+          <div class="age-tab" data-age="ninos38">Niños 3-8</div>
+          <div class="age-tab" data-age="ninos912">Niños 9-12</div>
+          <div class="age-tab" data-age="jovenes">Jóvenes</div>
+          <div class="age-tab" data-age="adultos">Adultos</div>
         </div>
         <div class="age-content" id="ageContent"></div>
+        <button class="listen-btn" id="ageListenBtn">🔊 Escuchar</button>
+        <div id="profundizarRow" hidden style="margin-top:10px;">
+          <button type="button" class="cta-btn secondary small" id="profundizarBtn">🔎 Profundizar</button>
+        </div>
+        <div id="profundizarBox" hidden style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);">
+          <div class="age-content" id="profundizarContent" style="font-style:italic;"></div>
+          <button class="listen-btn" id="profundizarListenBtn">🔊 Escuchar la versión profunda</button>
+        </div>
       </div>
 
       <div class="card">
@@ -469,7 +498,8 @@
       <div class="card">
         <div class="section-title">Conversemos (por edad)</div>
         <div class="age-tabs" id="convTabs">
-          <div class="age-tab active" data-age="ninos">Niños</div>
+          <div class="age-tab" data-age="ninos38">Niños 3-8</div>
+          <div class="age-tab" data-age="ninos912">Niños 9-12</div>
           <div class="age-tab" data-age="jovenes">Jóvenes</div>
           <div class="age-tab" data-age="adultos">Adultos</div>
         </div>
@@ -478,6 +508,7 @@
 
       <button class="cta-btn amber" id="startChallengeBtn">Iniciar el desafío de la semana →</button>
     </div>
+
 
     <!-- MARTES-VIERNES -->
     <div id="dayRetos" class="dayPanel" hidden>
@@ -683,19 +714,23 @@ const WEEKS = [
       { texto: 'Engañosa es la gracia, y vana la hermosura; la persona que teme a Jehová, ésa será alabada.', ref: 'Proverbios 31:30' },
     ],
     edades: {
-      ninos: 'Así como confías en que mamá o papá te sostienen la mano al cruzar la calle, podemos confiar en que Dios nos guía aunque no veamos todo el camino. Y con nuestras palabras podemos elegir ser como "miel" en vez de ásperos.',
+      ninos38: 'Cuando cruzás la calle, tomás la mano de mamá o papá aunque no veas todo el camino. ¡Así confiamos en Dios! Y cuando hablamos con palabras dulces como la miel, hacemos felices a los demás.',
+      ninos912: 'Así como confías en que mamá o papá te sostienen la mano al cruzar la calle, podemos confiar en que Dios nos guía aunque no veamos todo el camino. Y con nuestras palabras podemos elegir ser como "miel" en vez de ásperos.',
       jovenes: 'Lee Proverbios 3:5-6. ¿Alguna vez tomaste una decisión "apoyándote en tu propia prudencia" y después te diste cuenta de que te hubiera ido mejor confiando en Dios?',
       adultos: 'Estos capítulos hablan de cuatro áreas donde se nota si confiamos en Dios: nuestras decisiones (Prov. 3), nuestras palabras (Prov. 15-16), los tiempos que no controlamos (Eclesiastés 3) y el carácter que formamos en silencio (Prov. 31). Ninguna se arregla sola: las cuatro se entrenan.',
     },
+    profundizarTexto: 'Proverbios 3:5-6 usa dos ideas centrales: confiar (apoyar todo el peso del cuerpo en algo) y apoyarse (descansar). El contraste es entre poner TODO nuestro peso en Jehová, o ponerlo en nuestro propio entendimiento. El discernimiento no está mal — se vuelve un problema cuando reemplaza la confianza en Dios. Eclesiastés 3:1 complementa esto: hay un tiempo para cada cosa, lo que implica que la paciencia ante lo que no controlamos es, en sí, un acto de fe. Y Proverbios 31:30 cierra el círculo: el temor de Jehová no es miedo, sino un asombro reverente que ordena todas las demás prioridades de una vida. Pregúntate: ¿en qué área específica estás sustituyendo ese asombro reverente por control o por apariencia?',
     preguntaVida: '¿En qué área te cuesta más confiar en el tiempo y la dirección de Dios: tus decisiones, tus palabras, tus tiempos, o tu carácter?',
     dinamica: 'Escriban en 4 papelitos: "Decisiones", "Palabras", "Tiempos", "Carácter". Cada uno elige uno al azar y comparte, con honestidad, en qué está tratando de confiar más en Dios en esa área esta semana. Cierren orando juntos por lo que compartieron.',
     conversacion: {
-      ninos: '¿Qué palabra amable podemos decir hoy en vez de una fea?',
+      ninos38: '¿Qué palabra linda le podés decir hoy a alguien de tu familia?',
+      ninos912: '¿Qué palabra amable podemos decir hoy en vez de una fea?',
       jovenes: '¿Qué decisión te gustaría entregarle a Dios en oración en vez de resolverla solo/a?',
       adultos: '¿Cómo ha "enderezado" Dios algún camino tuyo en el pasado, aunque en su momento no lo entendías?',
     },
     desafiosIndividuales: [
-      { etiqueta: 'Niños', texto: 'Cada vez que sientas ganas de responder feo, cambia la respuesta por una palabra amable.' },
+      { etiqueta: 'Niños 3-8', texto: 'Cada vez que sientas ganas de responder feo, cambiá la respuesta por una palabra amable.' },
+      { etiqueta: 'Niños 9-12', texto: 'Antes de responder feo, contá hasta 3 y elegí una palabra amable — anotá cuántas veces lo lograste esta semana.' },
       { etiqueta: 'Jóvenes', texto: 'Antes de tomar una decisión esta semana, detente un minuto y ora pidiendo dirección.' },
       { etiqueta: 'Adultos', texto: 'Practicar "la blanda respuesta" (Proverbios 15:1) en al menos una conversación difícil esta semana.' },
     ],
@@ -719,19 +754,23 @@ const WEEKS = [
       { texto: 'Destruirá a la muerte para siempre, y enjugará Jehová el Señor toda lágrima de todos los rostros.', ref: 'Isaías 25:8' },
     ],
     edades: {
-      ninos: 'Isaías dice que un desierto —un lugar seco donde no crece nada— puede llenarse de flores. Eso es lo que Dios hace con las cosas que parecen "rotas": las vuelve a hacer lindas y nuevas. ¡Hasta las lágrimas las seca Él mismo!',
+      ninos38: 'Isaías dice que un desierto —un lugar seco donde no crece nada— puede llenarse de flores. ¡Así es Dios! Arregla las cosas rotas y las hace lindas de nuevo.',
+      ninos912: 'Isaías dice que un desierto —un lugar seco donde no crece nada— puede llenarse de flores. Eso es lo que Dios hace con las cosas que parecen "rotas": las vuelve a hacer lindas y nuevas. ¡Hasta las lágrimas las seca Él mismo!',
       jovenes: 'Isaías compara el orgullo de Babilonia con la rebelión de Lucifer: los dos se creyeron más grandes que Dios y los dos cayeron. ¿En qué se parece eso a la presión de "aparentar" o creerse mejor que otros que a veces sentimos hoy?',
       adultos: 'Isaías 29 describe un "libro sellado" que nadie puede leer, hasta que alguien sin estudios lo entrega y se cumple lo escrito: es una profecía directa sobre José Smith y el Libro de Mormón (ver 2 Nefi 27:6-26). La Restauración es, literalmente, la "obra maravillosa y un prodigio" que Isaías anunció siglos antes.',
     },
+    profundizarTexto: 'Isaías 29:11-12 describe el mensaje como "palabras de un libro sellado", que ni el letrado ni el iletrado pueden leer por sí solos — uno porque el libro está cerrado, el otro porque no sabe leer. José Smith encaja con esa segunda figura: "no sé leer" (Isaías 29:12), y aun así, por el don y el poder de Dios, tradujo el Libro de Mormón — una profecía técnica y verificable, escrita siglos antes del hecho. Isaías 24 al 27 describe un patrón más amplio: juicio sobre el orgullo de las naciones, seguido de restauración y un banquete final (Isaías 25:6-9) donde Dios "destruye a la muerte para siempre". Pregúntate: ¿qué "libro sellado" hay en tu propia vida —una verdad que necesitás, pero que solo se abre cuando dejás de intentar leerla con tus propias fuerzas?',
     preguntaVida: '¿Hay algo en tu vida —una relación, un hábito, una herida— que sientas tan "desierto" que ya ni pedís que cambie? ¿Qué te dicen estas promesas de Isaías sobre eso?',
     dinamica: 'Junten objetos o imágenes que representen la Restauración del Evangelio (un Libro de Mormón, una foto del templo, una imagen de la Primera Visión). Por turnos, cada uno toma uno y explica por qué, para él o ella, ese objeto es parte de la "obra maravillosa" de la que habla Isaías 29:14.',
     conversacion: {
-      ninos: '¿Qué es algo "feo" o "roto" que te gustaría pedirle a Dios que arregle?',
+      ninos38: '¿Qué cosa rota te gustaría que Dios arregle?',
+      ninos912: '¿Qué es algo "feo" o "roto" que te gustaría pedirle a Dios que arregle?',
       jovenes: '¿Cuándo fue la última vez que viste a Dios convertir un "desierto" en algo bueno, en tu vida o en la de alguien cercano?',
       adultos: '¿Qué señales de orgullo (propio o ajeno) reconocés en Isaías 24:5 o 29:13 que también ves en el mundo, o en vos mismo, hoy?',
     },
     desafiosIndividuales: [
-      { etiqueta: 'Niños', texto: 'Dibujá un desierto convirtiéndose en jardín, y contale a la familia qué "desierto" de tu vida te gustaría que Dios cambiara.' },
+      { etiqueta: 'Niños 3-8', texto: 'Dibujá una flor creciendo en un desierto, y mostrale el dibujo a tu familia.' },
+      { etiqueta: 'Niños 9-12', texto: 'Dibujá un desierto convirtiéndose en jardín, y contale a la familia qué "desierto" de tu vida te gustaría que Dios cambiara.' },
       { etiqueta: 'Jóvenes', texto: 'Identificá un área donde sentís orgullo o comparación con otros, y escribí una oración pidiendo humildad en esa área esta semana.' },
       { etiqueta: 'Adultos', texto: 'Leé 2 Nefi 27:6-26 y compará esa profecía con la historia de José Smith y el Libro de Mormón.' },
     ],
@@ -814,8 +853,64 @@ function showScreen(name) {
 
 let activeWeekIndex = 0;
 let activeDay = 'lunes'; // lunes | retos | cierre
-let activeAgeTab = 'ninos';
-let activeConvTab = 'ninos';
+let activeAgeTab = 'ninos38';
+let activeConvTab = 'ninos38';
+let profundizarAbierto = false;
+
+/* ============================================================
+   NIVELES POR EDAD
+   Cada persona elige el suyo una sola vez (queda guardado junto
+   a su identidad, como el nombre) — la app le muestra directamente
+   ese contenido, aunque puede pasar a las otras pestañas si quiere
+   ver el material de otra edad.
+   ============================================================ */
+const NIVELES = [
+  { key: 'ninos38', label: 'Niños de 3 a 8 años' },
+  { key: 'ninos912', label: 'Niños de 9 a 12 años' },
+  { key: 'jovenes', label: 'Jóvenes de 12 a 17 años' },
+  { key: 'adultos', label: 'Adultos de 18 en adelante' },
+];
+function renderNivelCards() {
+  const container = document.getElementById('nivelCards');
+  container.innerHTML = '';
+  NIVELES.forEach(n => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cta-btn secondary';
+    btn.textContent = n.label;
+    btn.addEventListener('click', () => {
+      identity.nivel = n.key;
+      saveIdentity(identity);
+      activeAgeTab = n.key;
+      activeConvTab = n.key;
+      document.getElementById('screenNivel').hidden = true;
+      startApp();
+    });
+    container.appendChild(btn);
+  });
+}
+renderNivelCards();
+function showNivelScreen() {
+  document.getElementById('screenJoin').hidden = true;
+  document.getElementById('screenLoading').hidden = true;
+  document.getElementById('appRoot').hidden = true;
+  document.getElementById('screenNivel').hidden = false;
+  window.scrollTo(0, 0);
+}
+// Después de tener identidad (recién unido/creado, o ya guardada de antes):
+// si todavía no eligió su nivel, se lo pide antes de entrar a la app.
+function proceedAfterIdentity() {
+  if (!identity.nivel) {
+    showNivelScreen();
+  } else {
+    activeAgeTab = identity.nivel;
+    activeConvTab = identity.nivel;
+    startApp();
+  }
+}
+document.getElementById('changeNivelBtn').addEventListener('click', () => {
+  showNivelScreen();
+});
 
 /* ============================================================
    RENDER: TOPBAR / RACHA / NOMBRE DE FAMILIA
@@ -963,7 +1058,7 @@ document.getElementById('joinGroupBtn').addEventListener('click', async () => {
     await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: new Date().toISOString() });
     identity = { groupCode: code, memberId: memberId, nombre: nombre };
     saveIdentity(identity);
-    startApp();
+    proceedAfterIdentity();
   } catch (e) {
     console.error('Error al unirse a la familia:', e);
     errorEl.textContent = 'No pudimos conectar. Revisá tu conexión a internet e intentá de nuevo.';
@@ -992,7 +1087,7 @@ document.getElementById('createGroupBtn').addEventListener('click', async () => 
     await fref('grupos/' + code + '/miembros/' + memberId).set({ nombre: nombre, unidoEn: now });
     identity = { groupCode: code, memberId: memberId, nombre: nombre, isHost: true };
     saveIdentity(identity);
-    startApp();
+    proceedAfterIdentity();
   } catch (e) {
     console.error('Error al crear la aventura:', e);
     errorEl.textContent = 'No pudimos conectar. Revisá tu conexión a internet e intentá de nuevo.';
@@ -1109,9 +1204,9 @@ function openWeek(index) {
     '<div class="verse-box">"' + escapeHtml(v.texto) + '"<div class="verse-ref">' + escapeHtml(v.ref) + '</div></div>'
   ).join('');
 
-  activeAgeTab = 'ninos';
+  activeAgeTab = identity.nivel || 'ninos38';
   renderAgeContent(w);
-  activeConvTab = 'ninos';
+  activeConvTab = identity.nivel || 'ninos38';
   renderConvContent(w);
 
   document.getElementById('lifeQuestion').textContent = w.preguntaVida;
@@ -1488,43 +1583,7 @@ document.getElementById('shareCodeBtn').addEventListener('click', () => {
   });
 });
 
-function renderAgeContent(w) {
-  document.getElementById('ageContent').textContent = w.edades[activeAgeTab];
-  document.querySelectorAll('#screenWeek .card:nth-of-type(1) .age-tab, .age-tabs .age-tab').forEach(()=>{});
-}
-document.querySelectorAll('.card .age-tabs .age-tab').forEach(()=>{});
-
-function wireAgeTabs() {
-  const container = document.querySelector('#dayLunes .card:nth-child(2) .age-tabs');
-  if (!container) return;
-  container.querySelectorAll('.age-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      container.querySelectorAll('.age-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeAgeTab = tab.dataset.age;
-      renderAgeContent(WEEKS[activeWeekIndex]);
-    });
-  });
-}
-
-function renderConvContent(w) {
-  document.getElementById('convContent').textContent = w.conversacion[activeConvTab];
-}
-function wireConvTabs() {
-  const container = document.getElementById('convTabs');
-  container.querySelectorAll('.age-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      container.querySelectorAll('.age-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeConvTab = tab.dataset.age;
-      renderConvContent(WEEKS[activeWeekIndex]);
-    });
-  });
-}
-
-document.getElementById('listenBtn').addEventListener('click', () => {
-  const w = WEEKS[activeWeekIndex];
-  const text = w.escrituras.map(v => v.texto + '. ' + v.ref + '.').join(' ');
+function speakText(text) {
   try {
     if (!('speechSynthesis' in window)) {
       alert('Este dispositivo no admite lectura en voz alta. Pueden leerla en familia.');
@@ -1538,6 +1597,72 @@ document.getElementById('listenBtn').addEventListener('click', () => {
   } catch (e) {
     console.error('No se pudo reproducir el audio:', e);
   }
+}
+
+function renderAgeContent(w) {
+  document.getElementById('ageContent').textContent = w.edades[activeAgeTab];
+  document.querySelectorAll('#ageTabs .age-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.age === activeAgeTab);
+  });
+  // "Profundizar" solo existe para adultos, y solo si la semana trae ese texto extra
+  profundizarAbierto = false;
+  document.getElementById('profundizarBox').hidden = true;
+  const showProfundizar = activeAgeTab === 'adultos' && !!w.profundizarTexto;
+  document.getElementById('profundizarRow').hidden = !showProfundizar;
+  document.getElementById('profundizarBtn').textContent = '🔎 Profundizar';
+}
+
+function wireAgeTabs() {
+  const container = document.getElementById('ageTabs');
+  if (!container) return;
+  container.querySelectorAll('.age-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      activeAgeTab = tab.dataset.age;
+      renderAgeContent(WEEKS[activeWeekIndex]);
+    });
+  });
+}
+
+function renderConvContent(w) {
+  document.getElementById('convContent').textContent = w.conversacion[activeConvTab];
+  document.querySelectorAll('#convTabs .age-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.age === activeConvTab);
+  });
+}
+function wireConvTabs() {
+  const container = document.getElementById('convTabs');
+  container.querySelectorAll('.age-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      activeConvTab = tab.dataset.age;
+      renderConvContent(WEEKS[activeWeekIndex]);
+    });
+  });
+}
+
+document.getElementById('listenBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  const text = w.escrituras.map(v => v.texto + '. ' + v.ref + '.').join(' ');
+  speakText(text);
+});
+
+document.getElementById('ageListenBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  speakText(w.edades[activeAgeTab]);
+});
+
+document.getElementById('profundizarBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  profundizarAbierto = !profundizarAbierto;
+  document.getElementById('profundizarBox').hidden = !profundizarAbierto;
+  document.getElementById('profundizarBtn').textContent = profundizarAbierto ? '🔼 Ocultar' : '🔎 Profundizar';
+  if (profundizarAbierto) {
+    document.getElementById('profundizarContent').textContent = w.profundizarTexto;
+  }
+});
+
+document.getElementById('profundizarListenBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  speakText(w.profundizarTexto);
 });
 
 document.getElementById('dynamicDone').addEventListener('change', (e) => {
@@ -1759,7 +1884,7 @@ const urlCode = getUrlCode();
 
 if (identity && identity.groupCode && identity.memberId) {
   document.getElementById('screenJoin').hidden = true;
-  startApp();
+  proceedAfterIdentity();
 } else if (urlCode) {
   document.querySelector('#screenJoin .join-toggle').hidden = true;
   document.getElementById('createForm').hidden = true;
