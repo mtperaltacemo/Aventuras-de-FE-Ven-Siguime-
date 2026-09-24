@@ -326,7 +326,7 @@
       </div>
     </div>
     <div class="card">
-      <div class="section-title">¿Quién sos vos?</div>
+      <div class="section-title">¿En qué nivel te identificás?</div>
       <p class="join-note">Elegí tu edad para que la app te muestre la historia, la escritura y el desafío justo para vos. Podés cambiarlo después con el link "Cambiar nivel".</p>
       <div id="nivelCards" style="display:flex; flex-direction:column; gap:10px;"></div>
     </div>
@@ -414,6 +414,12 @@
     </div>
 
     <div class="demo-flag" id="demoFlag">✨ Semana de ejemplo cargada — reemplázala por el contenido real de Ven, Sígueme cuando quieras.</div>
+
+    <div class="card" id="installCard" hidden>
+      <div class="section-title">📲 Instalar en tu celular</div>
+      <p id="installText" style="font-size:13px; line-height:1.5; margin:0 0 10px;"></p>
+      <button type="button" class="cta-btn secondary small" id="installBtn" hidden>Instalar la app →</button>
+    </div>
 
     <div class="card">
       <div class="section-title">Mapa de la aventura</div>
@@ -809,6 +815,52 @@ let identity = loadIdentity(); // { groupCode, memberId, nombre }
 let groupData = {}; // snapshot en vivo de grupos/{code} en Firebase
 let appStarted = false;
 
+/* ============================================================
+   INSTALAR COMO ACCESO DIRECTO (PWA)
+   El navegador no muestra esto solo — hay que ofrecerlo dentro de
+   la app para que alguien no técnico lo encuentre. En Android/Chrome
+   se puede disparar el diálogo real de instalación con un botón; en
+   iPhone/Safari, Apple no lo permite por código, así que se explica
+   el paso a paso (Compartir → Agregar a inicio).
+   ============================================================ */
+let deferredInstallPrompt = null;
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+function renderInstallCard() {
+  const card = document.getElementById('installCard');
+  const text = document.getElementById('installText');
+  const btn = document.getElementById('installBtn');
+  if (isStandaloneApp()) { card.hidden = true; return; }
+  if (deferredInstallPrompt) {
+    text.textContent = 'Agregala a tu pantalla de inicio para abrirla como una app, sin tener que buscar el link cada vez.';
+    btn.hidden = false;
+    card.hidden = false;
+  } else if (isIOSDevice()) {
+    text.textContent = 'Para instalarla: tocá el botón Compartir (el cuadrado con la flecha hacia arriba) y elegí "Agregar a inicio".';
+    btn.hidden = true;
+    card.hidden = false;
+  } else {
+    card.hidden = true;
+  }
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  renderInstallCard();
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  renderInstallCard();
+});
+window.addEventListener('appinstalled', () => { renderInstallCard(); });
+
 function weekProgress(weekId) {
   const semana = (groupData.semanas && groupData.semanas[weekId]) || {};
   const mp = (semana.miembros && semana.miembros[identity.memberId]) || {};
@@ -898,8 +950,21 @@ function showNivelScreen() {
   window.scrollTo(0, 0);
 }
 // Después de tener identidad (recién unido/creado, o ya guardada de antes):
-// si todavía no eligió su nivel, se lo pide antes de entrar a la app.
+// el administrador (quien creó el grupo) siempre es un adulto — se le asigna
+// ese nivel sin preguntarle nada, y va directo a la app (donde, si es la
+// primera vez, cae en la pantalla de crear su PIN). La pregunta de "¿en qué
+// nivel te identificás?" es solo para quienes se suman como participantes.
 function proceedAfterIdentity() {
+  if (identity.isHost) {
+    if (!identity.nivel) {
+      identity.nivel = 'adultos';
+      saveIdentity(identity);
+    }
+    activeAgeTab = identity.nivel;
+    activeConvTab = identity.nivel;
+    startApp();
+    return;
+  }
   if (!identity.nivel) {
     showNivelScreen();
   } else {
@@ -1136,6 +1201,7 @@ function onGroupDataChange() {
     document.getElementById('adminRecoverRow').hidden = !!identity.isHost;
     renderTopbar();
     renderMap();
+    renderInstallCard();
     showScreen('home');
     // El anfitrión/a que creó la familia cae directo en su panel (pidiendo
     // el PIN primero, como siempre) en vez del mapa — como el Panel del
