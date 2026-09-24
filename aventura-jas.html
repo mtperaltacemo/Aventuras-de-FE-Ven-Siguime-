@@ -323,7 +323,7 @@
 
     <div class="topbar">
       <div class="brand">
-        <span class="icon">🧑‍🤝‍🧑</span>
+        <span class="icon" id="brandIconTap">🧑‍🤝‍🧑</span>
         <div>
           <div class="name">Aventura JAS</div>
           <div class="title">Ven, Sígueme</div>
@@ -640,6 +640,11 @@
       </div>
 
       <div class="card">
+        <div class="section-title">Insignias y avance general</div>
+        <div id="adminBadgesList"></div>
+      </div>
+
+      <div class="card">
         <div class="section-title">Seguridad</div>
         <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin:0 0 10px;">El PIN del administrador es el mismo para todo el grupo.</p>
         <button type="button" class="cta-btn secondary small" id="resetPinBtn">¿Olvidaste el PIN? Reiniciarlo</button>
@@ -711,6 +716,37 @@ async function generateUniqueCode() {
    celular. Para cargar una semana real de Ven, Sígueme: copiar
    el bloque, cambiar el id, y reemplazar cada campo.
    ============================================================ */
+/* ============================================================
+   SISTEMA DE INSIGNIAS: símbolos SUD con 3 niveles cada uno
+   Cada símbolo (Liahona, Ángel Moroni, Templo, Libro de Mormón, Luz de
+   Cristo...) se gana en bronce, plata y oro a lo largo de 3 semanas
+   seguidas; al completar el oro, arranca el bronce del símbolo siguiente.
+   Se calcula solo a partir del índice de la semana — así una semana nueva
+   que se agregue a WEEKS no necesita que se le defina una insignia a mano.
+   ============================================================ */
+const BADGE_SYMBOLS = [
+  { nombre: 'Liahona', icono: '🧭' },
+  { nombre: 'Ángel Moroni', icono: '📯' },
+  { nombre: 'Templo', icono: '⛪' },
+  { nombre: 'Libro de Mormón', icono: '📘' },
+  { nombre: 'Luz de Cristo', icono: '🕯️' },
+];
+const BADGE_TIERS = [
+  { label: 'bronce', color: '#B5651D' },
+  { label: 'plata', color: '#8E97A3' },
+  { label: 'oro', color: '#C9971F' },
+];
+function getWeekBadge(index) {
+  const symbol = BADGE_SYMBOLS[Math.floor(index / 3) % BADGE_SYMBOLS.length];
+  const tier = BADGE_TIERS[index % 3];
+  return {
+    emoji: symbol.icono,
+    nombre: symbol.nombre + ' de ' + tier.label,
+    tierLabel: tier.label,
+    tierColor: tier.color,
+  };
+}
+
 const WEEKS = [
   {
     id: 'semana-1-enderezara-tus-veredas',
@@ -735,7 +771,6 @@ const WEEKS = [
     preguntaCierre: '¿En qué sentiste que Dios enderezó algo de tu camino esta semana?',
     frasePararecordar: '"Reconócelo en todos tus caminos, y él enderezará tus veredas." (Proverbios 3:6)',
     testimonio: 'Confiar no significa entender todo el camino, sino apoyarte en Aquel que sí lo ve completo.',
-    insignia: { emoji: '🛤️', nombre: 'Insignia de la Vereda Enderezada' },
   },
   {
     id: 'semana-2-obra-maravillosa-prodigio',
@@ -781,7 +816,6 @@ const WEEKS = [
     preguntaCierre: '¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?',
     frasePararecordar: '"El desierto se alegrará... y florecerá como la rosa." (Isaías 35:1)',
     testimonio: 'Ningún desierto es la última palabra — Dios ya escribió el camino que todavía no ves.',
-    insignia: { emoji: '🌷', nombre: 'Insignia del Desierto Florecido' },
   },
 ];
 
@@ -1011,7 +1045,10 @@ function onGroupDataChange() {
     // acceso ingresando el PIN.
     document.getElementById('adminLinkRow').hidden = !identity.isHost;
     document.getElementById('defeCrossLinkRow').hidden = !identity.isHost;
-    document.getElementById('adminRecoverRow').hidden = !!identity.isHost;
+    // El link de recuperación de PIN ya no se muestra nunca a nadie — queda
+    // disponible solo mediante el gesto oculto (5 toques al ícono de arriba),
+    // para que los alumnos no vean una pregunta que no pueden usar.
+    document.getElementById('adminRecoverRow').hidden = true;
     renderTopbar();
     renderMap();
     showScreen('home');
@@ -1024,7 +1061,7 @@ function onGroupDataChange() {
   renderTopbar();
   if (!screens.home.hidden) renderMap();
   if (!screens.week.hidden) refreshWeekDynamic();
-  if (!screens.admin.hidden) { renderAdminCode(); renderAdminStartWeek(); renderMembersList(); renderAdminWeekSummary(); }
+  if (!screens.admin.hidden) { renderAdminCode(); renderAdminStartWeek(); renderMembersList(); renderAdminWeekSummary(); renderAdminBadges(); }
 }
 
 /* ============================================================
@@ -1126,6 +1163,7 @@ function renderMap() {
   track.innerHTML = '';
   WEEKS.forEach((w, i) => {
     const status = weekStatus(i);
+    const badge = getWeekBadge(i);
     const div = document.createElement('div');
     div.className = 'map-week ' + status;
     let dot = (i + 1);
@@ -1135,12 +1173,12 @@ function renderMap() {
     let subText = 'Semana en curso — ¡vamos!';
     if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
     else if (status === 'scheduled') subText = 'Disponible desde el ' + formatDateEs(w.fechaInicio);
-    else if (status === 'done') subText = w.insignia.nombre;
+    else if (status === 'done') subText = badge.nombre;
     else if (status === 'ready') subText = 'Lista — falta que el administrador la active';
     div.innerHTML =
       '<div class="dot">' + dot + '</div>' +
       '<div class="label">Semana ' + (i + 1) + ' · ' + escapeHtml(w.tema) +
-        (status === 'done' ? '<span class="badge-emoji">' + w.insignia.emoji + '</span>' : '') +
+        (status === 'done' ? '<span class="badge-emoji">' + badge.emoji + '</span>' : '') +
       '</div>' +
       '<div class="sub">' + subText + '</div>';
     div.addEventListener('click', () => {
@@ -1298,6 +1336,23 @@ document.getElementById('adminRecoverLink').addEventListener('click', (e) => {
   e.preventDefault();
   showPinCard({ type: 'admin' });
 });
+
+// Gesto oculto: 5 toques rápidos sobre el ícono de la topbar abren el mismo
+// ingreso con PIN que antes ofrecía el link visible — así el líder puede
+// recuperar el acceso desde un celular nuevo, sin que los alumnos vean nada.
+(function() {
+  let taps = 0;
+  let resetTimer = null;
+  document.getElementById('brandIconTap').addEventListener('click', () => {
+    taps++;
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { taps = 0; }, 2000);
+    if (taps >= 5) {
+      taps = 0;
+      showPinCard({ type: 'admin' });
+    }
+  });
+})();
 document.getElementById('resetPinBtn').addEventListener('click', () => {
   const ok = confirm('Esto borra el PIN actual para todo el grupo — cualquiera podrá crear uno nuevo después. ¿Continuar?');
   if (!ok) return;
@@ -1459,6 +1514,35 @@ function renderAdminWeekSummary() {
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
+// Avance general por integrante, a través de TODAS las semanas cargadas
+// (no solo la activa) — qué insignias ya ganó cada uno y cuántas semanas
+// completó en total, para que el administrador vea el recorrido completo.
+function renderAdminBadges() {
+  const container = document.getElementById('adminBadgesList');
+  const entries = rosterEntries();
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía nadie se unió con el código.</div>';
+    return;
+  }
+  const semanas = groupData.semanas || {};
+  container.innerHTML = entries.map(m => {
+    const badges = [];
+    let doneCount = 0;
+    WEEKS.forEach((w, i) => {
+      const mp = (semanas[w.id] && semanas[w.id].miembros && semanas[w.id].miembros[m.id]) || {};
+      if (mp.closingDone) {
+        doneCount++;
+        badges.push(getWeekBadge(i).emoji);
+      }
+    });
+    return '<div class="member-row">' +
+      '<span class="mname">' + escapeHtml(m.nombre) + '</span>' +
+      '<span style="font-size:15px;">' + (badges.length ? badges.join(' ') : '<span style=\"font-size:12px; color:var(--muted);\">Sin insignias todavía</span>') +
+        ' <span style="font-size:11.5px; color:var(--muted);">· ' + doneCount + '/' + WEEKS.length + ' semanas</span></span>' +
+      '</div>';
+  }).join('');
+}
+
 function renderAdminStartWeek() {
   const text = document.getElementById('adminStartWeekText');
   const btn = document.getElementById('startWeekBtn');
@@ -1505,6 +1589,7 @@ function openAdminPanel() {
   renderAdminStartWeek();
   renderMembersList();
   renderAdminWeekSummary();
+  renderAdminBadges();
   showScreen('admin');
 }
 
@@ -1907,12 +1992,14 @@ document.getElementById('closeWeekBtn').addEventListener('click', () => {
   saveJournal();
   writeMine(w.id, 'closingDone', true);
   writeMine(w.id, 'closingAt', journal[w.id].closedAt);
-  showBadgeReveal(w);
+  showBadgeReveal(activeWeekIndex);
 });
 
-function showBadgeReveal(w) {
-  document.getElementById('badgeEmoji').textContent = w.insignia.emoji;
-  document.getElementById('badgeName').textContent = w.insignia.nombre;
+function showBadgeReveal(index) {
+  const badge = getWeekBadge(index);
+  document.getElementById('badgeEmoji').textContent = badge.emoji;
+  document.getElementById('badgeName').textContent = badge.nombre;
+  document.getElementById('badgeName').style.color = badge.tierColor;
   showScreen('badge');
 }
 
@@ -1961,8 +2048,9 @@ function renderJournal() {
   list.innerHTML = entries.map(e => {
     const date = new Date(e.j.closedAt);
     const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    const badge = getWeekBadge(e.i);
     return '<div class="journal-entry">' +
-      '<div class="jhead"><span class="jemoji">' + e.w.insignia.emoji + '</span>' +
+      '<div class="jhead"><span class="jemoji">' + badge.emoji + '</span>' +
         '<div><div class="jtitle">Semana ' + (e.i + 1) + ' · ' + escapeHtml(e.w.tema) + '</div>' +
         '<div class="jdate">' + dateStr + '</div></div></div>' +
       '<div class="jphrase">' + escapeHtml(e.w.frasePararecordar) + '</div>' +
