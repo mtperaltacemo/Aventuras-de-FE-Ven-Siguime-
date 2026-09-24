@@ -194,6 +194,13 @@
   .option-item { background: var(--cream-deep); border-radius: 10px; padding: 9px 12px; font-size: 13px; }
   .option-item b { color: var(--teal-deep); }
 
+  /* ---- Tarjetas de capítulo (aventura narrativa) ---- */
+  .cap-card { cursor:pointer; transition: border-color .15s, background .15s; }
+  .cap-card.elegido { border-color: var(--amber); background: var(--amber-soft); }
+  .cap-titulo { font-family:'Fraunces',serif; font-size: 15.5px; font-weight:700; color: var(--teal-deep); }
+  .cap-ref { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cap-check { font-size: 11px; color: var(--good); font-weight:700; margin-left: 6px; }
+
   .emoji-row { display:flex; gap:8px; flex-wrap:wrap; margin: 8px 0 12px; }
   .emoji-btn {
     font-size: 22px; background: var(--cream-deep); border: 2px solid transparent; border-radius: 10px;
@@ -427,32 +434,76 @@
 
       <!-- LUNES -->
       <div id="dayLunes" class="dayPanel" hidden>
-        <div class="card">
-          <div class="section-title">Conectar con las Escrituras</div>
-          <div id="versesBox"></div>
-          <button class="listen-btn" id="listenBtn">🔊 Escuchar la escritura</button>
-        </div>
 
-        <div class="card">
-          <div class="section-title">Reflexión</div>
-          <div class="age-content" id="reflexionText" style="font-size:13.5px; line-height:1.5;"></div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">Pregunta personal</div>
-          <div class="life-question" id="personalQuestion">—</div>
-        </div>
-
-        <div class="card dyn-box">
-          <div class="section-title">Actividad de la semana</div>
-          <p id="activityText"></p>
-          <div class="check-row">
-            <input type="checkbox" id="mondayDoneCheck">
-            <label for="mondayDoneCheck">Ya la hice</label>
+        <div id="lunesClasico">
+          <div class="card">
+            <div class="section-title">Conectar con las Escrituras</div>
+            <div id="versesBox"></div>
+            <button class="listen-btn" id="listenBtn">🔊 Escuchar la escritura</button>
           </div>
+
+          <div class="card">
+            <div class="section-title">Reflexión</div>
+            <div class="age-content" id="reflexionText" style="font-size:13.5px; line-height:1.5;"></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Pregunta personal</div>
+            <div class="life-question" id="personalQuestion">—</div>
+          </div>
+
+          <div class="card dyn-box">
+            <div class="section-title">Actividad de la semana</div>
+            <p id="activityText"></p>
+            <div class="check-row">
+              <input type="checkbox" id="mondayDoneCheck">
+              <label for="mondayDoneCheck">Ya la hice</label>
+            </div>
+          </div>
+
+          <button class="cta-btn amber" id="startChallengeBtn">Iniciar el desafío de la semana →</button>
         </div>
 
-        <button class="cta-btn amber" id="startChallengeBtn">Iniciar el desafío de la semana →</button>
+        <!-- ============ AVENTURA NARRATIVA (semanas con `capitulos`) ============ -->
+        <div id="lunesAventura" hidden>
+
+          <!-- Apertura cinemática -->
+          <div id="aventuraApertura">
+            <div class="card" style="text-align:center;">
+              <div class="section-title">La aventura de esta semana</div>
+              <h2 id="aperturaTituloEl" style="margin:4px 0 10px; color:var(--teal-deep); font-size:19px;">—</h2>
+              <p id="aperturaTextoEl" style="font-size:14px; line-height:1.6; margin:0 0 18px; color:var(--ink);">—</p>
+              <button class="cta-btn amber" id="comenzarAventuraBtn">Comenzar →</button>
+            </div>
+          </div>
+
+          <!-- Selección de capítulos -->
+          <div id="aventuraCapitulos" hidden>
+            <p style="font-size:13px; color:var(--muted); text-align:center; margin:0 0 12px;">Elegí un capítulo para vivirlo. Podés abrir uno, dos, o los tres.</p>
+            <div id="capitulosGrid"></div>
+            <button class="cta-btn amber" id="continueAventuraBtn" style="margin-top:10px;" hidden>Continuar a mi semana →</button>
+          </div>
+
+          <!-- Detalle de un capítulo -->
+          <div id="aventuraDetalle" hidden>
+            <button class="backBtn" id="backToCapitulosBtn" style="margin-bottom:12px;">← Capítulos</button>
+            <div class="card">
+              <div class="section-title" id="capDetRef">—</div>
+              <h3 id="capDetTitulo" style="margin:2px 0 12px; color:var(--teal-deep);">—</h3>
+              <div id="capDetAudioWrap" hidden style="margin-bottom:12px;">
+                <audio id="capDetAudio" controls style="width:100%;"></audio>
+              </div>
+              <p id="capDetAudioPending" style="font-size:12px; color:var(--muted); font-style:italic;" hidden>🎙️ Narración en camino — mientras tanto, leé la historia acá abajo.</p>
+              <p id="capDetHistoria" style="font-size:13.5px; line-height:1.6; white-space:pre-line;">—</p>
+            </div>
+            <div class="card">
+              <div class="section-title">Tu desafío</div>
+              <p id="capDetDesafio" style="font-size:13.5px; line-height:1.6;">—</p>
+            </div>
+            <button class="cta-btn amber" id="elegirCapituloBtn">Elegir este desafío para mi semana</button>
+          </div>
+
+        </div>
       </div>
 
       <!-- MARTES-VIERNES -->
@@ -462,18 +513,28 @@
           <div class="day-strip" id="dayStrip"></div>
         </div>
 
-        <div class="card">
-          <div class="section-title">Elegí tu desafío individual</div>
-          <div class="option-list" id="individualOptions"></div>
+        <div id="retosClasico" hidden>
+          <div class="card">
+            <div class="section-title">Elegí tu desafío individual</div>
+            <div class="option-list" id="individualOptions"></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Tu desafío individual</div>
+            <div class="check-row">
+              <input type="checkbox" id="individualDoneCheck">
+              <label for="individualDoneCheck">Ya cumplí mi desafío</label>
+            </div>
+          </div>
+        </div>
+
+        <div id="retosAventura" hidden>
+          <div class="section-title" style="margin-left:2px;">Tus desafíos elegidos</div>
+          <div id="retosCapitulosList"></div>
         </div>
 
         <div class="card">
-          <div class="section-title">Tu desafío individual</div>
-          <div class="check-row">
-            <input type="checkbox" id="individualDoneCheck">
-            <label for="individualDoneCheck">Ya cumplí mi desafío</label>
-          </div>
-          <p id="groupChallengeCount" style="font-size:12.5px; color:var(--muted); margin:10px 0 0;"></p>
+          <p id="groupChallengeCount" style="font-size:12.5px; color:var(--muted); margin:0;"></p>
         </div>
 
         <div class="card">
@@ -668,6 +729,46 @@ const WEEKS = [
     testimonio: 'Confiar no significa entender todo el camino, sino apoyarte en Aquel que sí lo ve completo.',
     insignia: { emoji: '🛤️', nombre: 'Insignia de la Vereda Enderezada' },
   },
+  {
+    id: 'semana-2-obra-maravillosa-prodigio',
+    fechaInicio: '2026-09-21', // no se puede activar antes de esta fecha
+    tema: 'Una obra maravillosa y un prodigio',
+    principio: 'Dios humilla el orgullo antes de que se derrumbe solo, abre lo que estaba sellado en el momento justo, y traza un camino donde el desierto no dejaba ver ninguno.',
+    // ---- Formato "aventura narrativa" (reemplaza escrituras/reflexion/desafiosOpciones) ----
+    aperturaTitulo: 'Isaías te desafía',
+    aperturaTexto: 'Los profetas antiguos no solo hablaban del pasado — vieron tu semana. Isaías 13, 14, 22, 24 al 30, y 35 esconden tres historias que todavía están pasando: la caída de los orgullosos, la restauración de lo que parecía perdido, y la promesa de un mundo sanado. Elige cuál vivir primero.',
+    capitulos: [
+      {
+        id: 'trono-vacio',
+        titulo: 'El trono vacío',
+        ref: 'Isaías 14:12-16',
+        audio: null, // pendiente de grabar
+        historiaTexto: 'Yo era el que siempre tenía la razón. En el grupo, en el trabajo, hasta en los chats — necesitaba que todos supieran que yo la tenía más clara que nadie. Y la verdad, me encantaba esa sensación de estar arriba.\n\nHasta que un día me tocó presentar algo importante frente a todo mi equipo... y me equivoqué. Feo. Delante de todos. Y lo peor no fue el error — fue darme cuenta de que llevaba meses tratando a la gente como si yo estuviera en un escalón más arriba que ellos. Ese día sentí que ese "trono" que me había armado se cayó de golpe, y yo con él.\n\nLo que aprendí ahí me lo confirmó después una escritura que leí, Isaías 14, del 12 al 16 — habla de alguien que quiso ponerse por encima de todos, y terminó cayendo más bajo que nadie. Me hizo pensar que la humildad no es hacerte chiquito — es dejar de necesitar estar arriba.',
+        desafioTexto: 'Esta semana, elige una situación donde normalmente buscarías quedar por encima de los demás — una discusión, un logro, una comparación — y cédele el protagonismo a otra persona, sin que nadie lo note. Al final del día, anota cómo te sentiste.',
+      },
+      {
+        id: 'lo-que-estaba-sellado',
+        titulo: 'Lo que estaba sellado',
+        ref: 'Isaías 29:11-14',
+        audio: null, // pendiente de grabar
+        historiaTexto: 'Si soy sincera, hubo un tiempo en que sentía que ya lo había escuchado todo. Las mismas historias, los mismos consejos — como si las Escrituras no tuvieran nada nuevo que decirme a mí, específicamente, en el momento que estaba viviendo.\n\nUna noche, sin ganas de nada, abrí el Libro de Mormón en una parte que siempre me había saltado, sin razón. Y por primera vez sentí que esa parte me hablaba a mí, de algo que estaba pasando exactamente esa semana. Fue raro — como si algo que había estado cerrado para mí, de repente se abriera.\n\nDespués entendí que Isaías ya lo había profetizado, en el capítulo 29 — habló de un libro que estaría "sellado" hasta que llegara el momento correcto. Y pensé: capaz no era el libro el que estaba sellado. Capaz era yo.',
+        desafioTexto: 'Lee un capítulo del Libro de Mormón que nunca hayas notado antes, y pregúntate: "¿qué verdad sellada encuentro aquí que necesito hoy?" Compártelo con alguien de la clase el próximo domingo.',
+      },
+      {
+        id: 'camino-que-no-se-veia',
+        titulo: 'El camino que no se veía',
+        ref: 'Isaías 35:1, 8-10',
+        audio: 'audio/capitulo3-el-camino-que-no-se-veia.mp3',
+        historiaTexto: 'Hubo una época en la que sentía que todo se me estaba cerrando — el trabajo, una relación, hasta mis propios planes. Como estar caminando en un desierto sin ver para dónde ir.\n\nUna noche oré, sin pedir nada específico, solo pidiendo ver algo, lo que fuera, que me mostrara que había un camino. No pasó nada mágico esa misma noche. Pero en las semanas siguientes, de a poco, empezaron a aparecer señales — pequeñas, pero reales — de que el desierto sí tenía un camino, aunque yo no lo viera todavía.\n\nDespués leí Isaías 35, y sentí que describía exactamente eso: un desierto que florece, un camino que aparece donde parecía que no había nada. Y entendí que esa promesa no era solo para un pueblo antiguo — era para mi propio desierto.',
+        desafioTexto: 'Identifica un "desierto" que estés atravesando ahora mismo, por pequeño que sea, y escribe una oración pidiendo ver el camino en medio de él. Al final de la semana, revisa si algo cambió.',
+      },
+    ],
+    accionServicio: 'Ayudá esta semana a alguien que sientas que está en su propio "desierto" — una llamada, una visita, o simplemente escuchar sin apurar consejos.',
+    preguntaCierre: '¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?',
+    frasePararecordar: '"El desierto se alegrará... y florecerá como la rosa." (Isaías 35:1)',
+    testimonio: 'Ningún desierto es la última palabra — Dios ya escribió el camino que todavía no ves.',
+    insignia: { emoji: '🌷', nombre: 'Insignia del Desierto Florecido' },
+  },
 ];
 
 /* ============================================================
@@ -728,6 +829,8 @@ function showScreen(name) {
 
 let activeWeekIndex = 0;
 let activeDay = 'lunes'; // lunes | retos | cierre
+let aventuraView = 'apertura'; // apertura | capitulos | detalle (solo semanas con `capitulos`)
+let aventuraCapId = null;
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -924,6 +1027,8 @@ function weekProgress(weekId) {
     individualDone: !!mp.individualDone,
     closingDone: !!mp.closingDone,
     closingAt: mp.closingAt || null,
+    elegidos: mp.elegidos || {},
+    retoCapitulos: mp.retoCapitulos || {},
   };
 }
 // Para el portón de ingreso: ¿ya arrancó alguna semana en este grupo? Se
@@ -1046,18 +1151,29 @@ function openWeek(index) {
   document.getElementById('weekTitle').textContent = w.tema;
   document.getElementById('weekPrincipio').textContent = w.principio;
 
-  const versesBox = document.getElementById('versesBox');
-  versesBox.innerHTML = w.escrituras.map(v =>
-    '<div class="verse-box">"' + escapeHtml(v.texto) + '"<div class="verse-ref">' + escapeHtml(v.ref) + '</div></div>'
-  ).join('');
+  const isAventura = !!w.capitulos;
+  document.getElementById('lunesClasico').hidden = isAventura;
+  document.getElementById('lunesAventura').hidden = !isAventura;
+  document.getElementById('retosClasico').hidden = isAventura;
+  document.getElementById('retosAventura').hidden = !isAventura;
 
-  document.getElementById('reflexionText').textContent = w.reflexion;
-  document.getElementById('personalQuestion').textContent = w.preguntaPersonal;
-  document.getElementById('activityText').textContent = w.actividadSemanal;
+  if (isAventura) {
+    aventuraView = p.mondayDone ? 'capitulos' : 'apertura';
+    renderAventuraLunes(w, p);
+    renderRetosAventura(w, p);
+  } else {
+    const versesBox = document.getElementById('versesBox');
+    versesBox.innerHTML = w.escrituras.map(v =>
+      '<div class="verse-box">"' + escapeHtml(v.texto) + '"<div class="verse-ref">' + escapeHtml(v.ref) + '</div></div>'
+    ).join('');
+    document.getElementById('reflexionText').textContent = w.reflexion;
+    document.getElementById('personalQuestion').textContent = w.preguntaPersonal;
+    document.getElementById('activityText').textContent = w.actividadSemanal;
+    renderIndividualOptions(w);
+  }
   document.getElementById('mondayDoneCheck').checked = !!p.mondayDone;
 
   renderDayStrip(w, p);
-  renderIndividualOptions(w);
   renderChallengeStatus(w.id);
   document.getElementById('serviceActionText').textContent = w.accionServicio;
 
@@ -1100,6 +1216,7 @@ function refreshWeekDynamic() {
   document.getElementById('mondayDoneCheck').checked = !!p.mondayDone;
   renderDayStrip(w, p);
   renderChallengeStatus(w.id);
+  if (w.capitulos) renderRetosAventura(w, p);
   if (p.activated) {
     document.getElementById('dayTabs').hidden = false;
     renderDayTabs(w, p);
@@ -1472,6 +1589,139 @@ function renderIndividualOptions(w) {
   list.innerHTML = w.desafiosOpciones.map(o =>
     '<div class="option-item"><b>' + escapeHtml(o.etiqueta) + ':</b> ' + escapeHtml(o.texto) + '</div>'
   ).join('');
+}
+
+/* ============================================================
+   AVENTURA NARRATIVA (semanas con `capitulos`)
+   Apertura cinemática → 3 tarjetas de capítulo (sin spoiler) →
+   detalle (historia + audio narrado + desafío) → el joven elige
+   uno, dos, o los tres antes de continuar a su semana.
+   ============================================================ */
+function renderAventuraLunes(w, p) {
+  document.getElementById('aperturaTituloEl').textContent = w.aperturaTitulo;
+  document.getElementById('aperturaTextoEl').textContent = w.aperturaTexto;
+  showAventuraView(w, p);
+}
+
+function showAventuraView(w, p) {
+  w = w || WEEKS[activeWeekIndex];
+  p = p || weekProgress(w.id);
+  document.getElementById('aventuraApertura').hidden = aventuraView !== 'apertura';
+  document.getElementById('aventuraCapitulos').hidden = aventuraView !== 'capitulos';
+  document.getElementById('aventuraDetalle').hidden = aventuraView !== 'detalle';
+  if (aventuraView === 'capitulos') renderCapitulosGrid(w, p);
+  if (aventuraView === 'detalle') renderCapituloDetalle(w, p);
+}
+
+function renderCapitulosGrid(w, p) {
+  const grid = document.getElementById('capitulosGrid');
+  grid.innerHTML = '';
+  w.capitulos.forEach(cap => {
+    const elegido = !!p.elegidos[cap.id];
+    const card = document.createElement('div');
+    card.className = 'card cap-card' + (elegido ? ' elegido' : '');
+    card.innerHTML =
+      '<div class="cap-titulo">' + escapeHtml(cap.titulo) + (elegido ? '<span class="cap-check">✓ Elegido</span>' : '') + '</div>' +
+      '<div class="cap-ref">' + escapeHtml(cap.ref) + '</div>';
+    card.addEventListener('click', () => {
+      aventuraCapId = cap.id;
+      aventuraView = 'detalle';
+      showAventuraView(w, p);
+    });
+    grid.appendChild(card);
+  });
+  const continueBtn = document.getElementById('continueAventuraBtn');
+  const anyElegido = w.capitulos.some(c => p.elegidos[c.id]);
+  continueBtn.hidden = !anyElegido || p.mondayDone;
+}
+
+function renderCapituloDetalle(w, p) {
+  const cap = w.capitulos.find(c => c.id === aventuraCapId);
+  if (!cap) return;
+  document.getElementById('capDetTitulo').textContent = cap.titulo;
+  document.getElementById('capDetRef').textContent = cap.ref;
+  document.getElementById('capDetHistoria').textContent = cap.historiaTexto;
+  document.getElementById('capDetDesafio').textContent = cap.desafioTexto;
+
+  const audioWrap = document.getElementById('capDetAudioWrap');
+  const audioEl = document.getElementById('capDetAudio');
+  const audioPending = document.getElementById('capDetAudioPending');
+  if (cap.audio) {
+    if (audioEl.getAttribute('src') !== cap.audio) audioEl.setAttribute('src', cap.audio);
+    audioWrap.hidden = false;
+    audioPending.hidden = true;
+  } else {
+    audioEl.removeAttribute('src');
+    audioWrap.hidden = true;
+    audioPending.hidden = false;
+  }
+
+  const elegido = !!p.elegidos[cap.id];
+  const btn = document.getElementById('elegirCapituloBtn');
+  btn.textContent = elegido ? 'Quitar de mi semana' : 'Elegir este desafío para mi semana';
+  btn.className = 'cta-btn' + (elegido ? ' secondary' : ' amber');
+}
+
+document.getElementById('comenzarAventuraBtn').addEventListener('click', () => {
+  aventuraView = 'capitulos';
+  showAventuraView();
+});
+
+document.getElementById('backToCapitulosBtn').addEventListener('click', () => {
+  const audioEl = document.getElementById('capDetAudio');
+  audioEl.pause();
+  aventuraView = 'capitulos';
+  showAventuraView();
+});
+
+document.getElementById('elegirCapituloBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  const p = weekProgress(w.id);
+  const cap = w.capitulos.find(c => c.id === aventuraCapId);
+  const elegido = !!p.elegidos[cap.id];
+  writeMine(w.id, 'elegidos/' + cap.id, !elegido);
+  aventuraView = 'capitulos';
+  showAventuraView(w, weekProgress(w.id));
+});
+
+document.getElementById('continueAventuraBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  writeMine(w.id, 'mondayDone', true);
+  activeDay = 'retos';
+  const p = weekProgress(w.id);
+  renderDayTabs(w, p);
+  showDayPanel('retos', w, p);
+});
+
+// Pestaña Martes-Viernes: un checkbox de "ya cumplí" por cada capítulo que
+// el joven eligió el lunes. El indicador agregado ("X de Y ya cumplieron")
+// se calcula igual que antes, sobre el flag general `individualDone` — acá
+// ese flag se deriva de si cumplió AL MENOS UNO de sus desafíos elegidos.
+function renderRetosAventura(w, p) {
+  const container = document.getElementById('retosCapitulosList');
+  const elegidosIds = Object.keys(p.elegidos).filter(id => p.elegidos[id]);
+  if (elegidosIds.length === 0) {
+    container.innerHTML = '<div class="empty-note">Todavía no elegiste ningún desafío — volvé a la pestaña 🏠 Lunes y elegí al menos uno.</div>';
+    return;
+  }
+  const retoState = Object.assign({}, p.retoCapitulos);
+  container.innerHTML = '';
+  w.capitulos.filter(c => elegidosIds.includes(c.id)).forEach(cap => {
+    const done = !!retoState[cap.id];
+    const row = document.createElement('div');
+    row.className = 'card';
+    row.innerHTML =
+      '<div class="cap-titulo" style="margin-bottom:6px;">' + escapeHtml(cap.titulo) + '</div>' +
+      '<p style="font-size:13.5px; line-height:1.5; margin:0 0 10px;">' + escapeHtml(cap.desafioTexto) + '</p>' +
+      '<div class="check-row"><input type="checkbox" ' + (done ? 'checked' : '') + '><label>Ya cumplí este desafío</label></div>';
+    row.querySelector('input[type=checkbox]').addEventListener('change', (e) => {
+      retoState[cap.id] = e.target.checked;
+      writeMine(w.id, 'retoCapitulos/' + cap.id, e.target.checked);
+      const anyDone = elegidosIds.some(id => retoState[id]);
+      writeMine(w.id, 'individualDone', anyDone);
+    });
+    container.appendChild(row);
+  });
 }
 
 /* ============================================================
