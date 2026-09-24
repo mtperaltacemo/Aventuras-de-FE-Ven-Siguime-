@@ -1446,30 +1446,42 @@ function renderAdminWeekSummary() {
 function renderAdminStartWeek() {
   const text = document.getElementById('adminStartWeekText');
   const btn = document.getElementById('startWeekBtn');
-  const currentIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'current');
-  if (currentIdx !== -1) {
-    const w = WEEKS[currentIdx];
-    text.textContent = 'Semana ' + (currentIdx + 1) + ' · ' + w.tema + ' — ya está en curso. Compartí el código de abajo para que se sumen.';
+
+  // Basado en la activación COMPARTIDA del grupo (currentAdminWeekIndex ya lee
+  // eso directo de groupData.semanas), no en el progreso personal de quien
+  // administra — así el líder puede activar la próxima semana aunque nunca
+  // haya cerrado personalmente su propia semana anterior como participante.
+  const currentIdx = currentAdminWeekIndex(); // última semana activada para el grupo, o -1
+  const nextIdx = currentIdx + 1;
+
+  if (nextIdx >= WEEKS.length) {
+    if (currentIdx !== -1) {
+      const w = WEEKS[currentIdx];
+      text.textContent = 'Semana ' + (currentIdx + 1) + ' · ' + w.tema + ' — ya está en curso. Compartí el código de abajo para que se sumen.';
+    } else {
+      text.textContent = 'Todavía no hay ninguna semana cargada.';
+    }
     btn.hidden = true;
     return;
   }
-  const readyIdx = WEEKS.findIndex((w, i) => weekStatus(i) === 'ready');
-  if (readyIdx !== -1) {
-    const w = WEEKS[readyIdx];
-    text.textContent = 'Semana ' + (readyIdx + 1) + ' · ' + w.tema + ' — lista para comenzar.';
-    btn.hidden = false;
-    btn.onclick = () => {
-      activateWeek(w.id);
-      renderAdminStartWeek();
-      renderAdminWeekSummary();
-    };
+
+  const w = WEEKS[nextIdx];
+  if (!dateReached(w.fechaInicio)) {
+    text.textContent = (currentIdx !== -1
+      ? 'Semana ' + (currentIdx + 1) + ' · ' + WEEKS[currentIdx].tema + ' — en curso. '
+      : '') +
+      'La próxima (Semana ' + (nextIdx + 1) + ' · ' + w.tema + ') va a estar disponible desde el ' + formatDateEs(w.fechaInicio) + '.';
+    btn.hidden = true;
     return;
   }
-  btn.hidden = true;
-  const hasAnyDone = WEEKS.some((w, i) => weekStatus(i) === 'done');
-  text.textContent = (hasAnyDone && WEEKS.length)
-    ? '¡Ya completaron todas las semanas cargadas! Avisale a quien coordina Ven, Sígueme cuando quieran la próxima.'
-    : 'Todavía no hay ninguna semana lista para comenzar (esperando su fecha, o falta cerrar la anterior).';
+
+  text.textContent = 'Semana ' + (nextIdx + 1) + ' · ' + w.tema + ' — lista para comenzar.';
+  btn.hidden = false;
+  btn.onclick = () => {
+    activateWeek(w.id);
+    renderAdminStartWeek();
+    renderAdminWeekSummary();
+  };
 }
 
 function openAdminPanel() {
