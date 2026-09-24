@@ -1882,6 +1882,17 @@ function getUrlCode() {
 }
 const urlCode = getUrlCode();
 
+// Link especial para repartir a organizadores de OTRAS familias (no la
+// propia): index.html?admin=1 los lleva directo al formulario de "crear mi
+// familia", sin tener que tocar la pestaña ellos mismos ni ver la opción de
+// unirse a una familia ajena.
+function getUrlAdmin() {
+  try {
+    return new URLSearchParams(location.search).get('admin') === '1';
+  } catch (e) { return false; }
+}
+const urlAdmin = getUrlAdmin();
+
 if (identity && identity.groupCode && identity.memberId) {
   document.getElementById('screenJoin').hidden = true;
   proceedAfterIdentity();
@@ -1896,6 +1907,13 @@ if (identity && identity.groupCode && identity.memberId) {
   document.querySelector('#joinForm .join-note').textContent =
     'Te invitaron a unirte a la Aventura de Fe de tu familia (código ' + urlCode + '). Escribí tu nombre para empezar.';
   document.getElementById('joinNameInput').focus();
+} else if (urlAdmin) {
+  document.querySelector('#screenJoin .join-toggle').hidden = true;
+  document.getElementById('joinForm').hidden = true;
+  document.getElementById('createForm').hidden = false;
+  document.querySelector('#createForm .join-note').textContent =
+    'Creá la Aventura de Fe para tu propia familia. Vas a recibir un código único para compartir con el resto de tu familia — cada uno lo usa para unirse desde su propio celular.';
+  document.getElementById('newGroupNameInput').focus();
 }
 
 })();
