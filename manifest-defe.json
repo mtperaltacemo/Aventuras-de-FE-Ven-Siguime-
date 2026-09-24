@@ -1,8 +1,9 @@
 {
+  "id": "./index.html",
   "name": "Aventura de Fe — Noche de Hogar",
   "short_name": "Aventura de Fe",
   "start_url": "./index.html",
-  "scope": "./",
+  "scope": "./index.html",
   "display": "standalone",
   "background_color": "#FBF6EC",
   "theme_color": "#E8A33D",
