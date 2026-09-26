@@ -846,7 +846,7 @@ const WEEKS = [
   },
   {
     id: 'semana-3-consolad-a-mi-pueblo',
-    fechaInicio: '2026-09-26', // ⚠️ SOLO PRUEBA — la fecha real es 2026-09-28
+    fechaInicio: '2026-09-28', // fecha real (el candado de fecha está desactivado abajo, solo en esta versión de prueba)
     tema: 'Consolad a mi pueblo',
     capitulosBiblicos: 'Isaías 40-49',
     principio: 'Dios renueva a los cansados, es la única "roca" que no se cae, y nunca se olvida de ti — aunque tú a veces sientas que sí.',
@@ -1258,11 +1258,7 @@ function parseLocalDate(dateStr) {
   return new Date(y, m - 1, d);
 }
 function dateReached(dateStr) {
-  if (!dateStr) return true;
-  const start = parseLocalDate(dateStr);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return today >= start;
+  return true; // ⚠️ SOLO EN LA VERSIÓN DE PRUEBA: el candado de fecha está desactivado a propósito, para poder activar cualquier semana ya mismo sin esperar su fecha real. Las fechas que se MUESTRAN en pantalla siguen siendo las reales — esto solo afecta si el botón de activar aparece o no.
 }
 function formatDateEs(dateStr) {
   return parseLocalDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
