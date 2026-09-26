@@ -519,11 +519,13 @@
                aparece si el capítulo trae `mapaAntiguo`; si no, se salta
                directo al detalle (compatibilidad con semanas anteriores). -->
           <div id="aventuraMapa" hidden>
-            <button class="backBtn" id="backToCapitulosFromMapaBtn" style="margin-bottom:12px;">← Capítulos</button>
+            <button class="backBtn" id="backToCapitulosFromMapaBtn" style="margin-bottom:12px;">← Elegir otro capítulo</button>
             <div class="card">
               <div class="section-title" id="mapaRef">—</div>
               <h3 id="mapaTitulo" style="margin:2px 0 10px; color:var(--teal-deep);">—</h3>
-              <p style="font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 14px;">🗺️ Este capítulo menciona lugares que existían en tiempos bíblicos. Buscá en Google cuál es el nombre ACTUAL de cada uno para desbloquear el módulo.</p>
+              <div id="mapaSvgWrap" style="margin:0 0 14px;"></div>
+              <p id="mapaEscritura" style="font-size:13px; line-height:1.6; font-style:italic; color:var(--muted); border-left:3px solid var(--amber); padding-left:10px; margin:0 0 14px;">—</p>
+              <p style="font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 14px;">🗺️ Este pasaje menciona lugares que existían en tiempos bíblicos. Buscá en Google cuál es el nombre ACTUAL de cada uno para desbloquear el módulo.</p>
               <div id="mapaCamposLista"></div>
               <p id="mapaFeedback" style="font-size:13px; font-weight:700; margin:10px 0 0;"></p>
             </div>
@@ -532,7 +534,7 @@
 
           <!-- Detalle de un capítulo -->
           <div id="aventuraDetalle" hidden>
-            <button class="backBtn" id="backToCapitulosBtn" style="margin-bottom:12px;">← Capítulos</button>
+            <button class="backBtn" id="backToCapitulosBtn" style="margin-bottom:12px;">← Elegir otro capítulo</button>
             <div class="card" id="capDetHistoriaCard">
               <div class="section-title" id="capDetRef">—</div>
               <h3 id="capDetTitulo" style="margin:2px 0 12px; color:var(--teal-deep);">—</h3>
@@ -846,7 +848,7 @@ const WEEKS = [
   },
   {
     id: 'semana-3-consolad-a-mi-pueblo',
-    fechaInicio: '2026-09-28', // fecha real (el candado de fecha está desactivado abajo, solo en esta versión de prueba)
+    fechaInicio: '2026-09-28', // no se puede activar antes de esta fecha
     tema: 'Consolad a mi pueblo',
     capitulosBiblicos: 'Isaías 40-49',
     principio: 'Dios renueva a los cansados, es la única "roca" que no se cae, y nunca se olvida de ti — aunque tú a veces sientas que sí.',
@@ -862,20 +864,21 @@ const WEEKS = [
       {
         id: 'camino-en-el-desierto',
         titulo: 'El camino en el desierto',
-        ref: 'Isaías 40:28-31',
+        ref: 'Isaías 40:1-2, 28-31',
+        escrituraTexto: '"Consolaos, consolaos, pueblo mío, dice vuestro Dios. Hablad al corazón de Jerusalén... Los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas; correrán, y no se cansarán; caminarán, y no se fatigarán."',
         mapaAntiguo: [
-          { antiguo: 'Babilonia', respuestas: ['irak', 'iraq'] },
-          { antiguo: 'Jerusalén (Sion)', respuestas: ['israel'] },
+          { antiguo: 'Jerusalén', respuestas: ['israel', 'jerusalen', 'jerusalén'] },
         ],
         desafioTexto: 'Esta semana, identificá un área donde estás "empujando solo" hace demasiado tiempo, y dedicale 5 minutos diarios a orar específicamente pidiendo fuerzas para esa área — no pidiendo que el problema desaparezca, pidiendo fuerzas para sostenerlo.',
       },
       {
         id: 'lo-que-no-se-cae',
         titulo: 'Lo que no se cae',
-        ref: 'Isaías 44 y 46 (los ídolos vs. el Dios verdadero)',
+        ref: 'Isaías 44:28; 45:1; 46:1',
+        escrituraTexto: '"Así dice Jehová... a Ciro: Tú eres mi pastor, y cumplirás todo lo que yo quiero... Postrado está Bel, abatido está Nebo; sus imágenes fueron puestas sobre bestias, sobre animales de carga."',
         mapaAntiguo: [
-          { antiguo: 'Persia', respuestas: ['iran', 'irán'] },
-          { antiguo: 'Babilonia', respuestas: ['irak', 'iraq'] },
+          { antiguo: 'Persia (el reino de Ciro)', respuestas: ['iran', 'irán'] },
+          { antiguo: 'Babilonia (donde se adoraba a Bel y Nebo)', respuestas: ['irak', 'iraq'] },
         ],
         desafioTexto: 'Identificá cuál de tus "ídolos" personales (imagen, control, aprobación, dinero) se tambaleó más esta semana, y escribí una oración específica entregándole justo esa área a Dios en vez de seguir sosteniéndola vos solo/a.',
       },
@@ -883,6 +886,7 @@ const WEEKS = [
         id: 'esculpido-en-la-palma',
         titulo: 'Esculpido en la palma de su mano',
         ref: 'Isaías 49:14-16',
+        escrituraTexto: '"Pero Sion dijo: Me dejó Jehová, y el Señor se olvidó de mí. ¿Se olvidará la mujer de lo que dio a luz...? Aunque olvide ella, yo nunca me olvidaré de ti. He aquí que en las palmas de las manos te tengo esculpida."',
         mapaAntiguo: [
           { antiguo: 'Sion', respuestas: ['israel', 'jerusalen', 'jerusalén'] },
         ],
@@ -1258,7 +1262,7 @@ function parseLocalDate(dateStr) {
   return new Date(y, m - 1, d);
 }
 function dateReached(dateStr) {
-  return true; // ⚠️ SOLO EN LA VERSIÓN DE PRUEBA: el candado de fecha está desactivado a propósito, para poder activar cualquier semana ya mismo sin esperar su fecha real. Las fechas que se MUESTRAN en pantalla siguen siendo las reales — esto solo afecta si el botón de activar aparece o no.
+  return true; // ⚠️ SOLO EN LA VERSIÓN DE PRUEBA: candado de fecha desactivado a propósito.
 }
 function formatDateEs(dateStr) {
   return parseLocalDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
@@ -1993,11 +1997,57 @@ function renderCapitulosGrid(w, p) {
   continueBtn.hidden = !anyElegido || p.mondayDone;
 }
 
+// Dibuja un mapa antiguo simple e ilustrado (no geográfico real, sino un
+// gráfico tipo "mapa de pergamino") con un pin por cada lugar mencionado.
+function buildMapaSvg(mapaAntiguo) {
+  const positions = mapaAntiguo.length === 1
+    ? [[200, 95]]
+    : [[130, 95], [270, 95]];
+  const pin = (cx, cyTop, color) => `
+    <path d="M ${cx} ${cyTop+50} C ${cx-24} ${cyTop+22} ${cx-14} ${cyTop} ${cx} ${cyTop}
+             C ${cx+14} ${cyTop} ${cx+24} ${cyTop+22} ${cx} ${cyTop+50} Z" fill="${color}"/>
+    <circle cx="${cx}" cy="${cyTop+14}" r="5" fill="#FBF6EC"/>
+  `;
+  const label = (cx, y, text) => `
+    <text x="${cx}" y="${y}" text-anchor="middle" font-family="Georgia, serif" font-size="13"
+          font-weight="700" fill="#5B3A22">${escapeHtml(text)}</text>
+  `;
+  let pinsAndLabels = '';
+  positions.forEach((pos, i) => {
+    const nombreCorto = mapaAntiguo[i].antiguo.split(' (')[0];
+    pinsAndLabels += pin(pos[0], pos[1], '#B5651D');
+    pinsAndLabels += label(pos[0], pos[1] + 68, nombreCorto);
+  });
+  const linea = positions.length === 2
+    ? `<line x1="${positions[0][0]}" y1="${positions[0][1]+20}" x2="${positions[1][0]}" y2="${positions[1][1]+20}"
+             stroke="#B5651D" stroke-width="2" stroke-dasharray="4,5" opacity="0.5"/>`
+    : '';
+  return `
+    <svg viewBox="0 0 400 175" style="width:100%; height:auto; border-radius:14px;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="pergamino" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#F3E3C3"/>
+          <stop offset="100%" stop-color="#E4C994"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="175" rx="14" fill="url(#pergamino)"/>
+      <rect x="6" y="6" width="388" height="163" rx="10" fill="none" stroke="#B5651D" stroke-width="1.5" stroke-dasharray="2,4" opacity="0.5"/>
+      <g opacity="0.5">
+        <path d="M370,20 L376,32 L389,32 L378,40 L382,53 L370,45 L358,53 L362,40 L351,32 L364,32 Z" fill="#B5651D"/>
+      </g>
+      ${linea}
+      ${pinsAndLabels}
+    </svg>
+  `;
+}
+
 function renderMapaAntiguo(w, p) {
   const cap = w.capitulos.find(c => c.id === aventuraCapId);
   if (!cap) return;
   document.getElementById('mapaTitulo').textContent = cap.titulo;
   document.getElementById('mapaRef').textContent = cap.ref;
+  document.getElementById('mapaEscritura').textContent = cap.escrituraTexto || '';
+  document.getElementById('mapaSvgWrap').innerHTML = buildMapaSvg(cap.mapaAntiguo);
   document.getElementById('mapaFeedback').textContent = '';
   document.getElementById('mapaFeedback').style.color = '';
   const lista = document.getElementById('mapaCamposLista');
