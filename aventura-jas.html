@@ -807,6 +807,12 @@ const WEEKS = [
     fechaInicio: '2026-09-21', // no se puede activar antes de esta fecha
     tema: 'Una obra maravillosa y un prodigio',
     capitulosBiblicos: 'Isaías 13-14; 22; 24-30; 35',
+    // Excepción de una sola vez: esta semana se "vive" completa durante la
+    // clase (simulando los días), así que los días de lectura no vencen por
+    // fecha real — quedan siempre marcables libremente. A partir de la
+    // semana del 28 de septiembre, el vencimiento por fecha vuelve a regir
+    // normalmente (no se agrega este campo a las semanas futuras).
+    omitirVencimientoDias: true,
     principio: 'Dios humilla el orgullo antes de que se derrumbe solo, abre lo que estaba sellado en el momento justo, y traza un camino donde el desierto no dejaba ver ninguno.',
     // ---- Formato "aventura narrativa" (reemplaza escrituras/reflexion/desafiosOpciones) ----
     aperturaTitulo: 'Isaías te desafía',
@@ -1929,12 +1935,18 @@ function renderDayStrip(w, p) {
   strip.innerHTML = '';
   const lectura = getLecturaDiaria(w);
   const today = todayDateOnly();
+  const sinVencimiento = !!w.omitirVencimientoDias;
+  const weekEnd = weekDayDate(w, 6); // domingo de esa semana
+  const weekOver = !sinVencimiento && today > weekEnd;
   DAYS_RETO.forEach(d => {
     const done = !!p.dailyChecks[d.key];
     const dayDate = weekDayDate(w, d.offset);
-    const isPast = dayDate < today;
-    const isFuture = dayDate > today;
-    const missed = isPast && !done;
+    const isFuture = !sinVencimiento && dayDate > today;
+    // Un día vencido (❌) recién pasa a serlo cuando TERMINA la semana entera
+    // sin haberse marcado — mientras la semana siga en curso, cualquier día
+    // ya llegado queda siempre abierto para marcarlo (aunque su propio día
+    // puntual ya haya pasado, ej. marcar el martes el jueves).
+    const missed = weekOver && !done && !isFuture;
     let stateClass = '';
     let icon = '⬜';
     if (done) { stateClass = ' done'; icon = '✅'; }
@@ -1960,8 +1972,9 @@ function renderDayStrip(w, p) {
 function missedReadings(w, p) {
   const lectura = getLecturaDiaria(w);
   const today = todayDateOnly();
+  const sinVencimiento = !!w.omitirVencimientoDias;
   return DAYS_RETO
-    .filter(d => weekDayDate(w, d.offset) < today && !p.dailyChecks[d.key] && lectura[d.key])
+    .filter(d => (sinVencimiento || weekDayDate(w, d.offset) <= today) && !p.dailyChecks[d.key] && lectura[d.key])
     .map(d => lectura[d.key]);
 }
 
