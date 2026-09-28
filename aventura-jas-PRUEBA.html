@@ -1272,8 +1272,18 @@ function parseLocalDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
+// La semana empieza el lunes (fechaInicio), pero el administrador la puede
+// activar desde el DOMINGO anterior (después de las reuniones).
+function activationDate(dateStr) {
+  const d = parseLocalDate(dateStr);
+  d.setDate(d.getDate() - 1);
+  return d;
+}
 function dateReached(dateStr) {
   return true; // ⚠️ SOLO EN LA VERSIÓN DE PRUEBA: candado de fecha desactivado a propósito.
+}
+function formatActivationEs(dateStr) {
+  return activationDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 }
 function formatDateEs(dateStr) {
   return parseLocalDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
@@ -1324,7 +1334,7 @@ function renderMap() {
     else if (status === 'scheduled') dot = '📅';
     let subText = 'Semana en curso — ¡vamos!';
     if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
-    else if (status === 'scheduled') subText = 'Disponible desde el ' + formatDateEs(w.fechaInicio);
+    else if (status === 'scheduled') subText = 'Disponible desde el ' + formatActivationEs(w.fechaInicio);
     else if (status === 'done') subText = badge.nombre;
     else if (status === 'ready') subText = 'Lista — falta que el administrador la active';
     div.innerHTML =
@@ -1789,7 +1799,7 @@ function renderAdminStartWeek() {
     text.textContent = (currentIdx !== -1
       ? weekRangeLabel(WEEKS[currentIdx].fechaInicio) + ' · ' + WEEKS[currentIdx].tema + ' — en curso. '
       : '') +
-      'La próxima (' + weekRangeLabel(w.fechaInicio) + ' · ' + w.tema + ') va a estar disponible desde el ' + formatDateEs(w.fechaInicio) + '.';
+      'La próxima (' + weekRangeLabel(w.fechaInicio) + ' · ' + w.tema + ') va a estar disponible desde el ' + formatActivationEs(w.fechaInicio) + '.';
     btn.hidden = true;
     return;
   }

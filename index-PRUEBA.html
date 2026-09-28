@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aventura de Fe — Noche de Hogar</title>
+<title>⚠️ PRUEBA — Aventura de Fe</title>
 <!-- Permite agregar la app a la pantalla de inicio del celular, con ícono propio -->
 <link rel="manifest" href="manifest-defe.json">
 <link rel="icon" href="icon-defe-192.png">
@@ -273,6 +273,9 @@
 </style>
 </head>
 <body>
+<div style="position:sticky; top:0; z-index:9999; background:#D6303B; color:#fff; text-align:center; font-weight:700; font-size:13px; padding:8px 10px; letter-spacing:.03em;">
+  ⚠️ APP DE PRUEBA — no es la app real de las familias
+</div>
 <div class="wrap">
 
   <!-- ============ INGRESO: UNIRSE O CREAR LA AVENTURA FAMILIAR ============ -->
@@ -978,10 +981,7 @@ function activationDate(dateStr) {
   return d;
 }
 function dateReached(dateStr) {
-  if (!dateStr) return true; // sin fecha configurada = sin restricción
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return today >= activationDate(dateStr);
+  return true; // ⚠️ SOLO EN LA VERSIÓN DE PRUEBA: candado de fecha desactivado a propósito.
 }
 function formatDateEs(dateStr) {
   return parseLocalDate(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
