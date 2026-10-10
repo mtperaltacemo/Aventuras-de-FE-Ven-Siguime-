@@ -287,6 +287,21 @@
   .admin-table td:first-child, .admin-table th:first-child { text-align:left; font-weight:600; }
   .loading-note { text-align:center; color: var(--muted); font-size: 13.5px; padding: 60px 10px; }
 
+
+  input.puerta-input { width:auto !important; display:inline-block; min-width:70px; padding:6px 8px; border-radius:10px; border:1.5px solid var(--line); font-size:14px; font-family:inherit; margin:2px 3px; text-align:center; }
+  .puerta-input.correcto { border-color: var(--good); background:#E7F3E9; }
+  .puerta-input.incorrecto { border-color: var(--terracotta); background:#FBEAEA; }
+  .vers-texto { font-size:15px; line-height:2.3; font-family:'Fraunces',serif; }
+  .seq-chip { display:block; width:100%; text-align:left; box-sizing:border-box; padding:10px 12px; margin:6px 0; border-radius:12px; border:1.5px solid var(--line); background:#fff; font-size:13.5px; font-family:inherit; cursor:pointer; }
+  .seq-chip.sel { border-color: var(--amber); background: var(--amber-soft); }
+  .seq-chip.correcto { border-color: var(--good); background:#E7F3E9; }
+  .seq-chip.incorrecto { border-color: var(--terracotta); background:#FBEAEA; }
+  .seq-sub { font-size:12px; font-weight:700; color: var(--teal-deep); margin:12px 0 2px; }
+  .quiz-q { margin:0 0 16px; }
+  .quiz-q .qt { font-size:14px; font-weight:700; margin-bottom:6px; color: var(--teal-deep); }
+  .quiz-op { display:block; padding:9px 12px; margin:5px 0; border-radius:10px; border:1.5px solid var(--line); background:#fff; font-size:13.5px; cursor:pointer; }
+  .quiz-op.correcto { border-color: var(--good); background:#E7F3E9; }
+  .quiz-op.incorrecto { border-color: var(--terracotta); background:#FBEAEA; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -552,6 +567,19 @@
               <button type="button" class="cta-btn secondary small" id="puzzleShuffleBtn" style="margin-top:10px;">🔀 Volver a mezclar</button>
               <p id="puzzleFeedback" style="font-size:13px; font-weight:700; margin:10px 0 0;"></p>
             </div>
+          </div>
+
+          <!-- Puerta genérica: versículo escondido, ordenar secuencia o quiz -->
+          <div id="aventuraPuerta" hidden>
+            <button class="backBtn" id="backToCapitulosFromPuertaBtn" style="margin-bottom:12px;">← Elegir otro capítulo</button>
+            <div class="card">
+              <div class="section-title" id="puertaRef">—</div>
+              <h3 id="puertaTitulo" style="margin:2px 0 10px; color:var(--teal-deep);">—</h3>
+              <p id="puertaInstruccion" style="font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 14px;"></p>
+              <div id="puertaBody"></div>
+              <p id="puertaFeedback" style="font-size:13px; font-weight:700; margin:10px 0 0;"></p>
+            </div>
+            <button class="cta-btn amber" id="puertaVerificarBtn">Verificar →</button>
           </div>
 
           <!-- Detalle de un capítulo -->
@@ -978,6 +1006,210 @@ const WEEKS = [
     frasePararecordar: '"Ciertamente llevó él nuestras enfermedades, y sufrió nuestros dolores... y por su llaga fuimos nosotros curados." (Isaías 53:4-5)',
     testimonio: 'No tenés que cargar solo lo que ya fue cargado por Alguien más — y Sus heridas son, literalmente, tu sanidad.',
   },
+  {
+    "id": "semana-5-el-redentor-vendra-a-sion",
+    "fechaInicio": "2026-10-12",
+    "tema": "El Redentor vendrá a Sion",
+    "capitulosBiblicos": "Isaías 58-66",
+    "principio": "Dios escoge el ayuno que libera, cambia tu ceniza por gloria, y es la luz que no se apaga — aunque todavía veas oscuridad.",
+    "aperturaTitulo": "Isaías te desafía",
+    "aperturaTexto": "Isaías cierra con la promesa más grande: el Redentor viene. Jesús mismo leyó Isaías 61 en la sinagoga y dijo que se estaba cumpliendo. Esta semana, tres pasajes sobre ayunar de verdad, cambiar ceniza por gloria y una luz que no se apaga. Cada capítulo esconde un versículo con palabras tapadas: buscalo en tu escritura y completalo para desbloquear el desafío.",
+    "lecturaDiaria": {
+      "mar": "Isaías 58-59",
+      "mie": "Isaías 60-61",
+      "jue": "Isaías 62-64",
+      "vie": "Isaías 65-66"
+    },
+    "capitulos": [
+      {
+        "id": "el-ayuno-que-escogi",
+        "titulo": "El ayuno que yo escogí",
+        "ref": "Isaías 58:6-7, 13-14",
+        "versiculo": {
+          "texto": "¿No es más bien el ayuno que yo escogí, desatar las {ligaduras} de impiedad, soltar las {cargas} de opresión, y dejar ir {libres} a los quebrantados, y que rompáis todo {yugo}?"
+        },
+        "desafioTexto": "Esta semana, elegí UNA de estas dos: (1) ayunar con un propósito — pedile a Dios por una persona concreta y destiná tu ofrenda de ayuno a los necesitados; o (2) preparar tu domingo para que sea de verdad un día de delicia (Isaías 58:13-14): decidí de antemano una cosa que dejás de lado y una que hacés para honrar al Señor."
+      },
+      {
+        "id": "belleza-en-lugar-de-ceniza",
+        "titulo": "Belleza en lugar de ceniza",
+        "ref": "Isaías 59:20; 61:1-3",
+        "versiculo": {
+          "texto": "a ordenar que a los afligidos de Sion se les dé {gloria} en lugar de {ceniza}, óleo de {gozo} en lugar de {luto}, manto de alegría en lugar del espíritu angustiado."
+        },
+        "desafioTexto": "Identificá una \"ceniza\" de tu vida — algo que quedó destruido o que te duele. Esta semana, escribí en una hoja cómo sería recibir \"gloria en su lugar\" y pedile al Redentor, en oración cada día, que empiece a hacerlo contigo. Después compartí con alguien de confianza qué sentiste."
+      },
+      {
+        "id": "se-levanto-tu-luz",
+        "titulo": "Se levantó tu luz",
+        "ref": "Isaías 60:1-3, 19; 65:17-25",
+        "versiculo": {
+          "texto": "Levántate, {resplandece}; porque ha venido tu {luz}, y la gloria de Jehová ha {nacido} sobre ti."
+        },
+        "desafioTexto": "Esta semana, buscá una \"oscuridad\" a tu alrededor (una persona sola, un problema sin resolver) y sé luz concreta: un mensaje, una visita o ayuda práctica. Al final de cada día, anotá una cosa en la que viste la luz de Cristo."
+      }
+    ],
+    "accionServicio": "Esta semana, ayuná con un propósito por alguien que lo necesite y llevale (o enviale) algo concreto: comida, un mensaje o tu tiempo. Isaías 58:7 lo dice claro: \"no te escondas de tu hermano\".",
+    "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
+    "frasePararecordar": "\"Levántate, resplandece; porque ha venido tu luz, y la gloria de Jehová ha nacido sobre ti.\" (Isaías 60:1)",
+    "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria."
+  },
+  {
+    "id": "semana-6-antes-que-te-formase",
+    "fechaInicio": "2026-10-19",
+    "tema": "Antes que te formase en el vientre te conocí",
+    "capitulosBiblicos": "Jeremías 1-3; 7; 16-18; 20",
+    "principio": "Dios te conocía antes de que nacieras, es la fuente que no se seca frente a las cisternas rotas, y sigue moldeando el barro que sos en Sus manos.",
+    "aperturaTitulo": "Jeremías te desafía",
+    "aperturaTexto": "Jeremías pensó que era demasiado joven para ser profeta. Dios le respondió que ya lo conocía desde antes de nacer. Esta semana, tres escenas de Jeremías: un llamado, una fuente y un alfarero. Cada capítulo se desbloquea ordenando las frases en el orden en que aparecen en el pasaje: leelo para saber cuál va primero.",
+    "lecturaDiaria": {
+      "mar": "Jeremías 1-3",
+      "mie": "Jeremías 7",
+      "jue": "Jeremías 16-18",
+      "vie": "Jeremías 20"
+    },
+    "capitulos": [
+      {
+        "id": "antes-que-nacieses",
+        "titulo": "Antes que nacieses",
+        "ref": "Jeremías 1:5-9",
+        "secuencia": [
+          "«Antes que te formase en el vientre te conocí.» (1:5)",
+          "«¡Ah, Señor Jehová! No sé hablar, porque soy niño.» (1:6)",
+          "«No digas: Soy niño… No temas, porque contigo estoy para librarte.» (1:7-8)",
+          "«He aquí he puesto mis palabras en tu boca.» (1:9)"
+        ],
+        "desafioTexto": "Esta semana, escribí tres cosas para las que sentís que \"no sos suficiente\" — como Jeremías con su \"soy niño\". Al lado de cada una, escribí la promesa de Jeremías 1:8: \"contigo estoy para librarte\". Leé tu lista cada noche en oración."
+      },
+      {
+        "id": "cisternas-rotas",
+        "titulo": "Fuente de agua viva",
+        "ref": "Jeremías 2:13",
+        "secuencia": [
+          "«Dos males ha hecho mi pueblo:»",
+          "«me dejaron a mí, fuente de agua viva,»",
+          "«y cavaron para sí cisternas,»",
+          "«cisternas rotas que no retienen agua.»"
+        ],
+        "desafioTexto": "Identificá una \"cisterna rota\" en tu vida — algo a lo que acudís buscando consuelo o valor y que no te llena (el celular, la aprobación, una distracción). Esta semana, cada vez que vayas a ella, hacé primero una pausa de un minuto de oración o de lectura de escrituras. Anotá qué cambia."
+      },
+      {
+        "id": "el-alfarero",
+        "titulo": "El barro y el alfarero",
+        "ref": "Jeremías 18:1-6",
+        "secuencia": [
+          "«Levántate y vete a casa del alfarero.» (18:1-2)",
+          "«Descendí… y he aquí que trabajaba sobre la rueda.» (18:3)",
+          "«La vasija se quebró en su mano; y volvió y la hizo otra vasija.» (18:4)",
+          "«Como el barro en la mano del alfarero, así sois vosotros en mi mano.» (18:6)"
+        ],
+        "desafioTexto": "Pensá en un área donde sentís que \"te echaste a perder\" — como la vasija quebrada. Esta semana, escribí una oración específica pidiendo que Dios te vuelva a formar en esa área, y anotá una acción pequeña que harías si de verdad confiaras en Sus manos."
+      }
+    ],
+    "accionServicio": "Esta semana, ayudá a alguien a acercarse a Cristo, \"uno de cada ciudad\" como dice Jeremías 3:14: invitalo a una actividad o a la clase, o simplemente compartile algo que Dios te enseñó esta semana.",
+    "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
+    "frasePararecordar": "\"Antes que te formase en el vientre te conocí, y antes que nacieses te santifiqué.\" (Jeremías 1:5)",
+    "testimonio": "Dios no te estrena: te conoce desde antes de que existieras y no se cansa de darte forma."
+  },
+  {
+    "id": "semana-7-cambiare-su-luto-en-gozo",
+    "fechaInicio": "2026-10-26",
+    "tema": "Cambiaré su luto en gozo",
+    "capitulosBiblicos": "Jeremías 31-33; 36-39; Lamentaciones 1; 3",
+    "principio": "Dios escribe Su ley en tu corazón, Su palabra tiene poder para cambiarte, y la valentía de una sola persona puede marcar la diferencia.",
+    "aperturaTitulo": "Jeremías te desafía",
+    "aperturaTexto": "Jeremías pasó de advertir a consolar: Dios promete un pacto nuevo, escrito en el corazón, y cambiar el luto en gozo. Esta semana, tres escenas: un pacto, un rollo quemado y un hombre valiente. Para desbloquear cada capítulo, contestá correctamente las preguntas — la respuesta está en el pasaje, así que leelo.",
+    "lecturaDiaria": {
+      "mar": "Jeremías 31-32",
+      "mie": "Jeremías 33; 36",
+      "jue": "Jeremías 37-39",
+      "vie": "Lamentaciones 1; 3"
+    },
+    "capitulos": [
+      {
+        "id": "una-ley-en-el-corazon",
+        "titulo": "Una ley en el corazón",
+        "ref": "Jeremías 31:31-34",
+        "quiz": [
+          {
+            "p": "¿Dónde dice el Señor que escribirá su ley en el nuevo pacto?",
+            "opciones": [
+              "En su corazón",
+              "En tablas de piedra",
+              "En un libro nuevo"
+            ],
+            "correcta": "En su corazón"
+          },
+          {
+            "p": "Según Jeremías 31:34, ¿de qué dice el Señor que no se acordará más?",
+            "opciones": [
+              "De su pecado",
+              "De sus ofrendas",
+              "De sus enemigos"
+            ],
+            "correcta": "De su pecado"
+          }
+        ],
+        "desafioTexto": "Elegí una promesa que hiciste a Dios (bautismo, sacramento, una ordenanza del templo) y escribí cómo Él ya te cumplió la Suya. Esta semana, hacé una acción pequeña y concreta que honre esa promesa cada día."
+      },
+      {
+        "id": "el-rollo-que-ardio",
+        "titulo": "El rollo que ardió",
+        "ref": "Jeremías 36:1-4, 20-26",
+        "quiz": [
+          {
+            "p": "¿Quién escribió en el rollo las palabras que Jeremías le dictó?",
+            "opciones": [
+              "Baruc",
+              "Sedequías",
+              "Ebed-melec"
+            ],
+            "correcta": "Baruc"
+          },
+          {
+            "p": "¿Qué hizo el rey Joacim con el rollo?",
+            "opciones": [
+              "Lo cortó y lo quemó en el fuego",
+              "Lo guardó en el templo",
+              "Lo copió y lo repartió"
+            ],
+            "correcta": "Lo cortó y lo quemó en el fuego"
+          }
+        ],
+        "desafioTexto": "Esta semana, leé las escrituras 10 minutos cada día buscando UNA frase que te pida cambiar algo. Anotala con fecha: cuál es el cambio y qué harás para lograrlo — no como Joacim, que quemó la palabra."
+      },
+      {
+        "id": "ebed-melec-el-valiente",
+        "titulo": "Ebed-melec, el valiente",
+        "ref": "Jeremías 38:1-13; 39:15-18",
+        "quiz": [
+          {
+            "p": "¿Dónde echaron a Jeremías por sus profecías?",
+            "opciones": [
+              "En una cisterna con lodo",
+              "En una cueva del desierto",
+              "En el palacio del rey"
+            ],
+            "correcta": "En una cisterna con lodo"
+          },
+          {
+            "p": "¿Quién fue ante el rey a defender a Jeremías?",
+            "opciones": [
+              "Ebed-melec, el etíope",
+              "Baruc",
+              "Joacim"
+            ],
+            "correcta": "Ebed-melec, el etíope"
+          }
+        ],
+        "desafioTexto": "Pensá en una situación de esta semana donde sabés lo correcto pero te da miedo defenderlo. Decidí de antemano qué vas a decir o hacer, y cuando llegue el momento, hacelo como Ebed-melec: sin esperar a que otros lo hagan primero."
+      }
+    ],
+    "accionServicio": "Esta semana, buscá a alguien que esté pasando un luto o una tristeza y recordale que, como dice Lamentaciones 3:22-23, las misericordias del Señor \"nuevas son cada mañana\": un mensaje, una visita o una oración por esa persona.",
+    "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
+    "frasePararecordar": "\"Por la misericordia de Jehová no hemos sido consumidos, porque nunca decayeron sus misericordias. Nuevas son cada mañana; grande es tu fidelidad.\" (Lamentaciones 3:22-23)",
+    "testimonio": "Ninguna pena es la última palabra: Dios cambia el luto en gozo, y Su misericordia es nueva cada mañana."
+  },
 ];
 
 /* ============================================================
@@ -1389,9 +1621,11 @@ function weekHasEnded(dateStr){const e=parseLocalDate(dateStr);e.setDate(e.getDa
 function weekStatus(index) {
   const w = WEEKS[index];
   const p = weekProgress(w.id);
+  // Manda el calendario: la semana está abierta hasta su domingo. Desde el
+  // lunes siguiente se CIERRA para todos (hayan cumplido o no) y queda solo
+  // la semana actual para participar.
+  if (weekHasEnded(w.fechaInicio)) return 'closed';
   if (p.closingDone) return 'done';
-  // Sin candado por semana anterior: manda el calendario.
-  if (!p.activated && weekHasEnded(w.fechaInicio)) return 'expired';
   if (!dateReached(w.fechaInicio)) return 'scheduled';
   if (p.activated) return 'current';
   return 'ready';
@@ -1402,16 +1636,18 @@ function renderMap() {
   track.innerHTML = '';
   WEEKS.forEach((w, i) => {
     const status = weekStatus(i);
-    if (status === 'expired') return;
+    const p0 = weekProgress(w.id);
     const badge = getWeekBadge(i);
     const div = document.createElement('div');
-    div.className = 'map-week ' + status;
+    div.className = 'map-week ' + (status === 'closed' ? 'locked' : status);
     let dot = (i + 1);
-    if (status === 'done') dot = '✓';
+    if (status === 'closed') dot = p0.closingDone ? '✓' : '🔒';
+    else if (status === 'done') dot = '✓';
     else if (status === 'ready') dot = '▶';
     else if (status === 'scheduled') dot = '📅';
     let subText = 'Semana en curso — ¡vamos!';
-    if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
+    if (status === 'closed') subText = 'Semana cerrada';
+    else if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
     else if (status === 'scheduled') subText = 'Disponible desde el ' + formatActivationEs(w.fechaInicio);
     else if (status === 'done') subText = badge.nombre;
     else if (status === 'ready') subText = 'Lista — falta que el administrador la active';
@@ -1422,7 +1658,7 @@ function renderMap() {
       '</div>' +
       '<div class="sub">' + subText + '</div>';
     div.addEventListener('click', () => {
-      if (status === 'locked' || status === 'scheduled') return;
+      if (status === 'closed' || status === 'locked' || status === 'scheduled') return;
       openWeek(i);
     });
     track.appendChild(div);
@@ -1434,7 +1670,7 @@ function renderMap() {
    ============================================================ */
 function openWeek(index) {
   const guardStatus = weekStatus(index);
-  if (guardStatus === 'locked' || guardStatus === 'scheduled') return;
+  if (guardStatus === 'closed' || guardStatus === 'locked' || guardStatus === 'scheduled') return;
 
   activeWeekIndex = index;
   const w = WEEKS[index];
@@ -2202,10 +2438,12 @@ function showAventuraView(w, p) {
   document.getElementById('aventuraCapitulos').hidden = aventuraView !== 'capitulos';
   document.getElementById('aventuraMapa').hidden = aventuraView !== 'mapaAntiguo';
   document.getElementById('aventuraRompecabezas').hidden = aventuraView !== 'rompecabezas';
+  document.getElementById('aventuraPuerta').hidden = aventuraView !== 'puerta';
   document.getElementById('aventuraDetalle').hidden = aventuraView !== 'detalle';
   if (aventuraView === 'capitulos') renderCapitulosGrid(w, p);
   if (aventuraView === 'mapaAntiguo') renderMapaAntiguo(w, p);
   if (aventuraView === 'rompecabezas') renderRompecabezas(w, p);
+  if (aventuraView === 'puerta') renderPuerta(w, p);
   if (aventuraView === 'detalle') renderCapituloDetalle(w, p);
 }
 
@@ -2218,7 +2456,7 @@ function renderCapitulosGrid(w, p) {
     // nombres antiguos, o rompecabezas — ambas se desbloquean una sola vez
     // y comparten el mismo registro (mapaResuelto). Si no trae ninguna,
     // pasa directo al contenido, como las semanas de testimonios narrados.
-    const tienePuerta = !!(cap.mapaAntiguo && cap.mapaAntiguo.length) || !!cap.rompecabezas;
+    const tienePuerta = !!(cap.mapaAntiguo && cap.mapaAntiguo.length) || !!cap.rompecabezas || !!(cap.versiculo || cap.secuencia || cap.quiz);
     const resuelto = !tienePuerta || !!p.mapaResuelto[cap.id];
     const card = document.createElement('div');
     card.className = 'card cap-card' + (elegido ? ' elegido' : '');
@@ -2231,6 +2469,7 @@ function renderCapitulosGrid(w, p) {
     card.addEventListener('click', () => {
       aventuraCapId = cap.id;
       if (resuelto) aventuraView = 'detalle';
+      else if (cap.versiculo || cap.secuencia || cap.quiz) aventuraView = 'puerta';
       else aventuraView = cap.rompecabezas ? 'rompecabezas' : 'mapaAntiguo';
       showAventuraView(w, p);
     });
@@ -2395,6 +2634,128 @@ document.getElementById('puzzleShuffleBtn').addEventListener('click', () => {
   const w = WEEKS[activeWeekIndex];
   const cap = w.capitulos.find(c => c.id === aventuraCapId);
   startPuzzle(cap);
+});
+
+/* ============================================================
+   PUERTAS GENÉRICAS: versículo escondido, ordenar secuencia, quiz.
+   Comparten el registro mapaResuelto con el mapa y el rompecabezas.
+   ============================================================ */
+let seqState = null; // { capId, pool:[idx], chosen:[idx] }
+
+function renderPuerta(w, p) {
+  const cap = w.capitulos.find(c => c.id === aventuraCapId);
+  if (!cap) return;
+  document.getElementById('puertaTitulo').textContent = cap.titulo;
+  document.getElementById('puertaRef').textContent = cap.ref;
+  const fb = document.getElementById('puertaFeedback');
+  fb.textContent = ''; fb.style.color = '';
+  const body = document.getElementById('puertaBody');
+  const ins = document.getElementById('puertaInstruccion');
+  body.innerHTML = '';
+  if (cap.versiculo) {
+    ins.textContent = '📖 Completá el versículo: buscá el pasaje (' + cap.ref + ') en tu escritura y escribí las palabras que faltan.';
+    const partes = cap.versiculo.texto.split(/\{([^}]+)\}/);
+    let h = '<div class="vers-texto">';
+    partes.forEach((t, i) => {
+      if (i % 2 === 0) h += escapeHtml(t);
+      else h += '<input type="text" class="puerta-input" data-resp="' + escapeHtml(t) + '" size="' + Math.max(6, t.length + 1) + '" placeholder="' + escapeHtml(t.charAt(0)) + '…" autocapitalize="off" autocomplete="off">';
+    });
+    body.innerHTML = h + '</div>';
+  } else if (cap.secuencia) {
+    ins.textContent = '🔢 Tocá las frases en el orden correcto en que aparecen en el pasaje (' + cap.ref + '). Tocá una frase de tu orden para sacarla.';
+    const pool = cap.secuencia.map((_, i) => i);
+    do { shuffleArray(pool); } while (pool.every((v, i) => v === i));
+    seqState = { capId: cap.id, pool: pool, chosen: [] };
+    renderSecuencia(cap);
+  } else if (cap.quiz) {
+    ins.textContent = '❓ Respondé bien todas las preguntas para desbloquear. La respuesta está en el pasaje (' + cap.ref + '): leelo.';
+    let h = '';
+    cap.quiz.forEach((qq, qi) => {
+      const ops = qq.opciones.slice();
+      shuffleArray(ops);
+      h += '<div class="quiz-q"><div class="qt">' + escapeHtml(qq.p) + '</div>';
+      ops.forEach(o => {
+        h += '<label class="quiz-op"><input type="radio" name="quiz' + qi + '" value="' + escapeHtml(o) + '"> ' + escapeHtml(o) + '</label>';
+      });
+      h += '</div>';
+    });
+    body.innerHTML = h;
+  }
+}
+
+function renderSecuencia(cap) {
+  const body = document.getElementById('puertaBody');
+  body.innerHTML = '';
+  const sub1 = document.createElement('div'); sub1.className = 'seq-sub'; sub1.textContent = 'Tu orden:';
+  body.appendChild(sub1);
+  if (!seqState.chosen.length) {
+    const e = document.createElement('div'); e.style.cssText = 'font-size:12px;color:var(--muted);font-style:italic;'; e.textContent = 'Todavía no elegiste ninguna.';
+    body.appendChild(e);
+  }
+  seqState.chosen.forEach((idx, pos) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'seq-chip sel';
+    b.textContent = (pos + 1) + '. ' + cap.secuencia[idx];
+    b.addEventListener('click', () => { seqState.chosen.splice(pos, 1); seqState.pool.push(idx); renderSecuencia(cap); document.getElementById('puertaFeedback').textContent = ''; });
+    body.appendChild(b);
+  });
+  if (seqState.pool.length) {
+    const sub2 = document.createElement('div'); sub2.className = 'seq-sub'; sub2.textContent = 'Frases:';
+    body.appendChild(sub2);
+    seqState.pool.forEach(idx => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'seq-chip';
+      b.textContent = cap.secuencia[idx];
+      b.addEventListener('click', () => { seqState.pool = seqState.pool.filter(v => v !== idx); seqState.chosen.push(idx); renderSecuencia(cap); document.getElementById('puertaFeedback').textContent = ''; });
+      body.appendChild(b);
+    });
+  }
+}
+
+function puertaDesbloquear(w, cap) {
+  const fb = document.getElementById('puertaFeedback');
+  fb.textContent = '✅ ¡Correcto! Módulo desbloqueado — podés comenzar.';
+  fb.style.color = 'var(--good)';
+  writeMine(w.id, 'mapaResuelto/' + cap.id, true);
+  setTimeout(() => { aventuraView = 'detalle'; showAventuraView(w, weekProgress(w.id)); }, 900);
+}
+
+document.getElementById('puertaVerificarBtn').addEventListener('click', () => {
+  const w = WEEKS[activeWeekIndex];
+  const cap = w.capitulos.find(c => c.id === aventuraCapId);
+  if (!cap) return;
+  const fb = document.getElementById('puertaFeedback');
+  let ok = true;
+  if (cap.versiculo) {
+    document.querySelectorAll('#puertaBody .puerta-input').forEach(inp => {
+      const bien = normalizarRespuesta(inp.getAttribute('data-resp')) === normalizarRespuesta(inp.value);
+      inp.classList.toggle('correcto', bien); inp.classList.toggle('incorrecto', !bien);
+      if (!bien) ok = false;
+    });
+  } else if (cap.secuencia) {
+    if (seqState.chosen.length !== cap.secuencia.length) {
+      fb.textContent = 'Ordená todas las frases primero.'; fb.style.color = 'var(--terracotta)'; return;
+    }
+    ok = seqState.chosen.every((v, i) => v === i);
+    document.querySelectorAll('#puertaBody .seq-chip').forEach((el, i) => {
+      const bien = seqState.chosen[i] === i;
+      el.classList.toggle('correcto', bien); el.classList.toggle('incorrecto', !bien);
+    });
+  } else if (cap.quiz) {
+    cap.quiz.forEach((qq, qi) => {
+      const sel = document.querySelector('input[name="quiz' + qi + '"]:checked');
+      const bien = !!sel && sel.value === qq.correcta;
+      document.querySelectorAll('input[name="quiz' + qi + '"]').forEach(r => {
+        r.parentElement.classList.remove('correcto', 'incorrecto');
+      });
+      if (sel) sel.parentElement.classList.add(bien ? 'correcto' : 'incorrecto');
+      if (!bien) ok = false;
+    });
+  }
+  if (ok) puertaDesbloquear(w, cap);
+  else { fb.textContent = '❌ Todavía hay algo que no es correcto. Releé el pasaje e intentalo de nuevo.'; fb.style.color = 'var(--terracotta)'; }
+});
+document.getElementById('backToCapitulosFromPuertaBtn').addEventListener('click', () => {
+  aventuraView = 'capitulos';
+  showAventuraView();
 });
 
 function renderCapituloDetalle(w, p) {
