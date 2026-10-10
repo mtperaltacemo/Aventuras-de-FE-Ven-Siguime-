@@ -1234,7 +1234,15 @@ function startApp() {
     onGroupDataChange();
   }, (err) => {
     console.error('Error de conexión con Firebase:', err);
+    showLoadingProblem((err && err.code ? err.code : 'error') + '');
   });
+  setTimeout(() => { if (!appStarted) showLoadingProblem('timeout'); }, 12000);
+}
+function showLoadingProblem(code) {
+  if (appStarted) return;
+  const n = document.querySelector('#screenLoading .loading-note');
+  if (!n) return;
+  n.innerHTML = 'No logramos conectar con tu grupo (' + escapeHtml(code) + ').<br>Revisá tu internet y <a href="#" onclick="location.reload();return false;" style="color:inherit;text-decoration:underline">tocá acá para reintentar</a>.';
 }
 
 function onGroupDataChange() {
