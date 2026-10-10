@@ -719,6 +719,11 @@
       </div>
 
       <div class="card">
+        <div class="section-title">🌟 Van muy bien</div>
+        <div id="adminFelicitar"></div>
+      </div>
+
+      <div class="card">
         <div class="section-title">🏆 Ranking de insignias</div>
         <div id="adminBadgesList"></div>
       </div>
@@ -1372,16 +1377,13 @@ function weekRangeLabel(fechaInicioStr) {
   return startLabel + ' al ' + endLabel;
 }
 
+function weekHasEnded(dateStr){const e=parseLocalDate(dateStr);e.setDate(e.getDate()+6);const n=new Date();const t=new Date(n.getFullYear(),n.getMonth(),n.getDate());return t>e;}
 function weekStatus(index) {
   const w = WEEKS[index];
   const p = weekProgress(w.id);
   if (p.closingDone) return 'done';
-  let prevOk = true;
-  if (index > 0) {
-    const prevP = weekProgress(WEEKS[index - 1].id);
-    prevOk = prevP.closingDone;
-  }
-  if (!prevOk) return 'locked';
+  // Sin candado por semana anterior: manda el calendario.
+  if (!p.activated && weekHasEnded(w.fechaInicio)) return 'expired';
   if (!dateReached(w.fechaInicio)) return 'scheduled';
   if (p.activated) return 'current';
   return 'ready';
@@ -1392,6 +1394,7 @@ function renderMap() {
   track.innerHTML = '';
   WEEKS.forEach((w, i) => {
     const status = weekStatus(i);
+    if (status === 'expired') return;
     const badge = getWeekBadge(i);
     const div = document.createElement('div');
     div.className = 'map-week ' + status;
@@ -1750,53 +1753,122 @@ function renderAdminWeekSummary() {
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
-// Quiénes no tuvieron NINGUNA actividad esta semana (ni un día de lectura
-// marcado, ni eligieron un módulo, ni marcaron nada del sábado) — para que
-// el administrador sepa a quién animar, sin depender de perseguir checks
-// marcados sin haberlo hecho de verdad (eso se nota solo, en la clase).
+// Resumen de lo que hizo una persona en la semana activa. Se usa para armar
+// las dos listas del administrador (a quién animar y a quién felicitar), así
+// nadie queda en las dos ni en ninguna.
+function actividadSemana(mp) {
+  mp = mp || {};
+  const dc = mp.dailyChecks || {};
+  const dias = ['mar', 'mie', 'jue', 'vie'].filter(k => dc[k]).length;
+  const elegidos = Object.values(mp.elegidos || {}).filter(Boolean).length;
+  const desbloqueados = Object.values(mp.mapaResuelto || {}).filter(Boolean).length;
+  const retos = Object.values(mp.retoCapitulos || {}).filter(Boolean).length;
+  const sabado = Object.values(mp.sabadoTareas || {}).filter(Boolean).length;
+  const total = dias + elegidos + desbloqueados + retos + sabado;
+  return { dias, elegidos, desbloqueados, retos, sabado, total, tieneActividad: total > 0 };
+}
+
+function mensajeAnimar(nombre) {
+  return 'Hola ' + nombre + ', vi que todavía no arrancaste con el desafío de esta semana en Aventura JAS — ¿todo bien? Cualquier cosa avisame 🙌';
+}
+function mensajeFelicitar(nombre, act) {
+  if (act.dias >= 4) {
+    return 'Hola ' + nombre + ', vi que ya leíste los 4 días de esta semana en Aventura JAS 📖 ¡Felicitaciones, qué constancia! Sigue así 🙌';
+  }
+  if (act.dias > 0) {
+    return 'Hola ' + nombre + ', vi que ya vienes avanzando con la lectura de esta semana en Aventura JAS (' + act.dias + ' de 4 días 📖) — ¡felicitaciones! Sigue así 🙌';
+  }
+  return 'Hola ' + nombre + ', vi que ya empezaste con el desafío de esta semana en Aventura JAS — ¡felicitaciones por dar el primer paso! Sigue así 🙌';
+}
+
+function resumenActividad(act) {
+  const partes = [];
+  if (act.dias > 0) partes.push('📖 ' + act.dias + '/4 días');
+  if (act.desbloqueados > 0) partes.push('🔓 ' + act.desbloqueados + (act.desbloqueados === 1 ? ' módulo' : ' módulos'));
+  if (act.retos > 0) partes.push('✅ ' + act.retos + (act.retos === 1 ? ' desafío cumplido' : ' desafíos cumplidos'));
+  if (act.sabado > 0) partes.push('🗓️ sábado');
+  if (partes.length === 0 && act.elegidos > 0) partes.push('eligió su módulo');
+  return partes.join(' · ');
+}
+
+// Conecta los botones "Copiar mensaje" de una lista (cada botón trae el
+// nombre completo en data-nombre y el mensaje se arma con el primer nombre).
+function conectarBotonesCopiar(container, armarMensaje) {
+  container.querySelectorAll('button[data-nombre]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nombre = btn.dataset.nombre.split(' ')[0]; // solo el primer nombre, más natural
+      copyToClipboard(armarMensaje(nombre, btn.dataset.nombre)).then(() => {
+        const original = btn.textContent;
+        btn.textContent = '✅ Copiado';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    });
+  });
+}
+
+// Dos listas para el seguimiento pastoral de la semana activa:
+//  - "Necesitan un empujoncito": quienes no hicieron NADA todavía.
+//  - "Van muy bien": quienes ya hicieron algo, ordenados de más a menos
+//    avance, con un mensaje de felicitación listo para copiar.
+// (Los checks marcados sin haberlo hecho de verdad no se pueden detectar;
+// eso se nota solo en la conversación del domingo.)
 function renderAdminAlerta() {
-  const container = document.getElementById('adminAlerta');
+  const contAnimar = document.getElementById('adminAlerta');
+  const contFelicitar = document.getElementById('adminFelicitar');
   const idx = currentAdminWeekIndex();
   if (idx === -1) {
-    container.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía no se activó ninguna semana.</div>';
+    const vacio = '<div class="empty-note" style="padding:10px 4px;">Todavía no se activó ninguna semana.</div>';
+    contAnimar.innerHTML = vacio;
+    contFelicitar.innerHTML = vacio;
     return;
   }
   const w = WEEKS[idx];
   const entries = rosterEntries();
-  const semanaMiembros = (groupData.semanas && groupData.semanas[w.id] && groupData.semanas[w.id].miembros) || {};
-
-  const sinActividad = entries.filter(m => {
-    const mp = semanaMiembros[m.id] || {};
-    const dc = mp.dailyChecks || {};
-    const doneDays = ['mar', 'mie', 'jue', 'vie'].filter(k => dc[k]).length;
-    const eligioAlgo = Object.values(mp.elegidos || {}).some(Boolean);
-    const sabadoAlgo = Object.values(mp.sabadoTareas || {}).some(Boolean);
-    return doneDays === 0 && !eligioAlgo && !sabadoAlgo;
-  });
-
   if (entries.length === 0) {
-    container.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Nadie se unió todavía.</div>';
-  } else if (sinActividad.length === 0) {
-    container.innerHTML = '<div style="font-size:13px; color:var(--good); padding:6px 4px;">✅ Todos tuvieron alguna actividad esta semana.</div>';
+    const vacio = '<div class="empty-note" style="padding:10px 4px;">Nadie se unió todavía.</div>';
+    contAnimar.innerHTML = vacio;
+    contFelicitar.innerHTML = vacio;
+    return;
+  }
+  const semanaMiembros = (groupData.semanas && groupData.semanas[w.id] && groupData.semanas[w.id].miembros) || {};
+  const conAct = entries.map(m => ({ m, act: actividadSemana(semanaMiembros[m.id]) }));
+
+  const sinActividad = conAct.filter(x => !x.act.tieneActividad);
+  const cumpliendo = conAct.filter(x => x.act.tieneActividad)
+    .sort((a, b) => b.act.dias - a.act.dias || b.act.total - a.act.total || a.m.nombre.localeCompare(b.m.nombre));
+
+  // --- A quién animar ---
+  if (sinActividad.length === 0) {
+    contAnimar.innerHTML = '<div style="font-size:13px; color:var(--good); padding:6px 4px;">✅ Todos tuvieron alguna actividad esta semana.</div>';
   } else {
-    container.innerHTML =
-      '<p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">Sin ningún día de lectura, ningún módulo elegido, y nada del sábado marcado:</p>' +
-      sinActividad.map(m =>
+    contAnimar.innerHTML =
+      '<p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">Todavía sin ninguna actividad esta semana (ni lectura, ni módulos, ni sábado):</p>' +
+      sinActividad.map(x =>
         '<div class="member-row" style="align-items:center;">' +
-          '<span class="mname">⚠️ ' + escapeHtml(m.nombre) + '</span>' +
-          '<button type="button" class="cta-btn secondary small" data-nombre="' + escapeHtml(m.nombre) + '" style="padding:5px 10px; font-size:11.5px;">Copiar mensaje</button>' +
+          '<span class="mname">⚠️ ' + escapeHtml(x.m.nombre) + '</span>' +
+          '<button type="button" class="cta-btn secondary small" data-nombre="' + escapeHtml(x.m.nombre) + '" style="padding:5px 10px; font-size:11.5px;">Copiar mensaje</button>' +
         '</div>'
       ).join('');
-    container.querySelectorAll('button[data-nombre]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const nombre = btn.dataset.nombre.split(' ')[0]; // solo el primer nombre, más natural
-        const mensaje = 'Hola ' + nombre + ', vi que todavía no arrancaste con el desafío de esta semana en Aventura JAS — ¿todo bien? Cualquier cosa avisame 🙌';
-        copyToClipboard(mensaje).then(() => {
-          const original = btn.textContent;
-          btn.textContent = '✅ Copiado';
-          setTimeout(() => { btn.textContent = original; }, 1500);
-        });
-      });
+    conectarBotonesCopiar(contAnimar, (nombre) => mensajeAnimar(nombre));
+  }
+
+  // --- A quién felicitar ---
+  if (cumpliendo.length === 0) {
+    contFelicitar.innerHTML = '<div class="empty-note" style="padding:10px 4px;">Todavía nadie arrancó esta semana.</div>';
+  } else {
+    contFelicitar.innerHTML =
+      '<p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">Ya empezaron — de más a menos avance:</p>' +
+      cumpliendo.map(x =>
+        '<div class="member-row" style="align-items:center;">' +
+          '<span class="mname">🌟 ' + escapeHtml(x.m.nombre) +
+            '<span style="display:block; font-size:11.5px; font-weight:400; color:var(--muted);">' + escapeHtml(resumenActividad(x.act)) + '</span>' +
+          '</span>' +
+          '<button type="button" class="cta-btn secondary small" data-nombre="' + escapeHtml(x.m.nombre) + '" data-idx="' + conAct.indexOf(x) + '" style="padding:5px 10px; font-size:11.5px;">Copiar mensaje</button>' +
+        '</div>'
+      ).join('');
+    conectarBotonesCopiar(contFelicitar, (nombre, nombreCompleto) => {
+      const x = conAct.find(y => y.m.nombre === nombreCompleto);
+      return mensajeFelicitar(nombre, x ? x.act : { dias: 0 });
     });
   }
 }
