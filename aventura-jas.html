@@ -677,6 +677,23 @@
 
         <button class="cta-btn" id="closeWeekBtn">Cerrar tu aventura de esta semana 🏅</button>
       </div>
+
+      <div class="card" id="claseDomingoCard" hidden>
+        <div class="section-title">📖 Clase domingo</div>
+        <p style="font-size:13px; line-height:1.45; margin:0 0 10px;">Elegí el número de grupo que te tocó en clase:</p>
+        <div id="cdGrupos" style="display:flex; gap:8px; margin-bottom:12px;"></div>
+        <button class="cta-btn" id="cdBuscarBtn" disabled>🔎 Busca la pista de tu grupo</button>
+        <div id="cdResultado" hidden style="margin-top:14px;">
+          <div id="cdTema" style="font-weight:700; font-size:15px; margin-bottom:6px;"></div>
+          <div id="cdPista" style="font-size:14px; line-height:1.5; margin-bottom:8px;"></div>
+          <div id="cdTarea" style="font-size:13px; line-height:1.45; color:var(--muted); margin-bottom:12px;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:11.5px; color:var(--muted);">Tiempo de búsqueda</div>
+            <div id="cdReloj" style="font-size:44px; font-weight:800; font-variant-numeric:tabular-nums;">7:00</div>
+            <div id="cdFin" style="font-weight:700; color:var(--terracotta);" hidden>⏰ ¡Tiempo! Prepárense para explicar.</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ============ BADGE REVEAL ============ -->
@@ -1052,7 +1069,8 @@ const WEEKS = [
     "accionServicio": "Esta semana, ayuná con un propósito por alguien que lo necesite y llevale (o enviale) algo concreto: comida, un mensaje o tu tiempo. Isaías 58:7 lo dice claro: \"no te escondas de tu hermano\".",
     "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
     "frasePararecordar": "\"Levántate, resplandece; porque ha venido tu luz, y la gloria de Jehová ha nacido sobre ti.\" (Isaías 60:1)",
-    "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria."
+    "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria.",
+    "claseDomingo": {"minutos": 7, "orden": [2, 0, 3, 1], "pistas": [{"tema": "El ayuno", "emoji": "🍞", "buscar": "Isaías 58", "pista": "Dios dice cuál es el ayuno que Él escoge. Buscá en Isaías 58 el versículo que empieza con «¿No es más bien el ayuno que yo escogí…?»", "tarea": "Anoten qué 4 cosas se hacen con ese ayuno y piensen UNA acción concreta que su grupo puede hacer esta semana."}, {"tema": "El Redentor", "emoji": "🤝", "buscar": "Isaías 59", "pista": "Alguien vendrá a rescatar a Sion. Buscá en Isaías 59 el versículo que dice «Y vendrá a Sion el Redentor…».", "tarea": "Expliquen con sus palabras qué hace un redentor y de qué los puede rescatar Jesús a ustedes hoy."}, {"tema": "La luz", "emoji": "💡", "buscar": "Isaías 60", "pista": "Dios invita a levantarse. Buscá en Isaías 60 el versículo que empieza con «Levántate, resplandece…».", "tarea": "Anoten qué dos cosas nos pide Dios que hagamos y qué cosa ha nacido sobre nosotros. ¿Cómo puede un joven ser luz esta semana?"}, {"tema": "Ceniza por gloria", "emoji": "✨", "buscar": "Isaías 61", "pista": "Jesús leyó este pasaje en Nazaret. Buscá en Isaías 61 los versículos 1 al 3, donde algo triste se cambia por algo hermoso.", "tarea": "Hagan una lista de los cambios (X en lugar de Y) y elijan el que más le habla a su grupo para explicarlo en 1 minuto."}]}
   },
   {
     "id": "semana-6-antes-que-te-formase",
@@ -1710,6 +1728,7 @@ function openWeek(index) {
   document.getElementById('closingQuestion').textContent = w.preguntaCierre;
   document.getElementById('rememberPhrase').textContent = w.frasePararecordar;
   renderSabadoOpciones(w, p);
+  renderClaseDomingo(w);
   renderEmojiRow(w.id);
   const jEntry = journal[w.id];
   document.getElementById('closingNote').value = (jEntry && jEntry.note) || '';
@@ -2399,6 +2418,78 @@ function renderSabadoOpciones(w, p) {
     });
     list.appendChild(row);
   });
+}
+
+
+/* ===== Clase domingo: pista por grupo + cronómetro ===== */
+let cdInterval = null;
+function cdKey(w){ return 'cdState_' + w.id; }
+function cdLoad(w){ try { return JSON.parse(localStorage.getItem(cdKey(w)) || 'null'); } catch(e){ return null; } }
+function cdSave(w, st){ try { localStorage.setItem(cdKey(w), JSON.stringify(st)); } catch(e){} }
+function renderClaseDomingo(w){
+  const card = document.getElementById('claseDomingoCard');
+  if (!w.claseDomingo) { card.hidden = true; if (cdInterval) clearInterval(cdInterval); return; }
+  card.hidden = false;
+  const cd = w.claseDomingo;
+  let st = cdLoad(w) || {};
+  let sel = st.grupo || null;
+  const box = document.getElementById('cdGrupos');
+  const btn = document.getElementById('cdBuscarBtn');
+  box.innerHTML = '';
+  for (let g = 1; g <= cd.pistas.length; g++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = g;
+    b.dataset.g = g;
+    b.style.cssText = 'flex:1; padding:12px 0; font-size:20px; font-weight:800; border-radius:12px; border:2px solid var(--navy,#1f3a5f); background:#fff; color:var(--navy,#1f3a5f);';
+    b.addEventListener('click', () => {
+      sel = g;
+      paint();
+    });
+    box.appendChild(b);
+  }
+  function paint(){
+    box.querySelectorAll('button').forEach(b => {
+      const on = Number(b.dataset.g) === sel;
+      b.style.background = on ? 'var(--navy,#1f3a5f)' : '#fff';
+      b.style.color = on ? '#fff' : 'var(--navy,#1f3a5f)';
+    });
+    btn.disabled = !sel;
+  }
+  paint();
+  btn.onclick = () => {
+    if (!sel) return;
+    const prev = cdLoad(w);
+    // Si ya empezó con el mismo grupo, no se reinicia el reloj
+    const st2 = (prev && prev.grupo === sel && prev.fin) ? prev : { grupo: sel, fin: Date.now() + cd.minutos * 60000 };
+    cdSave(w, st2);
+    showPista(w, st2);
+  };
+  if (st.grupo && st.fin) showPista(w, st);
+  else document.getElementById('cdResultado').hidden = true;
+}
+function showPista(w, st){
+  const cd = w.claseDomingo;
+  const idx = cd.orden[(st.grupo - 1) % cd.orden.length] % cd.pistas.length;
+  const p = cd.pistas[idx];
+  document.getElementById('cdResultado').hidden = false;
+  document.getElementById('cdTema').textContent = p.emoji + ' Grupo ' + st.grupo + ' · ' + p.tema + ' — buscá en ' + p.buscar;
+  document.getElementById('cdPista').textContent = p.pista;
+  document.getElementById('cdTarea').textContent = '👉 ' + p.tarea;
+  if (cdInterval) clearInterval(cdInterval);
+  const reloj = document.getElementById('cdReloj'), fin = document.getElementById('cdFin');
+  function tick(){
+    const left = Math.max(0, Math.round((st.fin - Date.now()) / 1000));
+    reloj.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+    if (left <= 0) {
+      fin.hidden = false;
+      reloj.style.color = 'var(--terracotta)';
+      clearInterval(cdInterval); cdInterval = null;
+      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch(e){}
+    } else { fin.hidden = true; reloj.style.color = ''; }
+  }
+  tick();
+  if (st.fin > Date.now()) cdInterval = setInterval(tick, 500);
 }
 
 function renderIndividualOptions(w) {
