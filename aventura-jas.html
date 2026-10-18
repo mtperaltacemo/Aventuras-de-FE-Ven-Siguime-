@@ -1070,7 +1070,7 @@ const WEEKS = [
     "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
     "frasePararecordar": "\"Levántate, resplandece; porque ha venido tu luz, y la gloria de Jehová ha nacido sobre ti.\" (Isaías 60:1)",
     "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria.",
-    "claseDomingo": {"minutos": 7, "orden": [2, 0, 3, 1], "pistas": [{"tema": "El ayuno", "emoji": "🍞", "buscar": "Isaías 58", "pista": "Dios dice cuál es el ayuno que Él escoge. Buscá en Isaías 58 el versículo que empieza con «¿No es más bien el ayuno que yo escogí…?»", "tarea": "Anoten qué 4 cosas se hacen con ese ayuno y piensen UNA acción concreta que su grupo puede hacer esta semana."}, {"tema": "El Redentor", "emoji": "🤝", "buscar": "Isaías 59", "pista": "Alguien vendrá a rescatar a Sion. Buscá en Isaías 59 el versículo que dice «Y vendrá a Sion el Redentor…».", "tarea": "Expliquen con sus palabras qué hace un redentor y de qué los puede rescatar Jesús a ustedes hoy."}, {"tema": "La luz", "emoji": "💡", "buscar": "Isaías 60", "pista": "Dios invita a levantarse. Buscá en Isaías 60 el versículo que empieza con «Levántate, resplandece…».", "tarea": "Anoten qué dos cosas nos pide Dios que hagamos y qué cosa ha nacido sobre nosotros. ¿Cómo puede un joven ser luz esta semana?"}, {"tema": "Ceniza por gloria", "emoji": "✨", "buscar": "Isaías 61", "pista": "Jesús leyó este pasaje en Nazaret. Buscá en Isaías 61 los versículos 1 al 3, donde algo triste se cambia por algo hermoso.", "tarea": "Hagan una lista de los cambios (X en lugar de Y) y elijan el que más le habla a su grupo para explicarlo en 1 minuto."}]}
+    "claseDomingo": {"abreAnio": 2026, "abreMes": 10, "abreDia": 18, "abreHora": 9, "minutos": 7, "orden": [2, 0, 3, 1], "pistas": [{"tema": "El ayuno", "emoji": "🍞", "buscar": "Isaías 58", "pista": "Dios dice cuál es el ayuno que Él escoge. Buscá en Isaías 58 el versículo que empieza con «¿No es más bien el ayuno que yo escogí…?»", "tarea": "Anoten qué 4 cosas se hacen con ese ayuno y piensen UNA acción concreta que su grupo puede hacer esta semana."}, {"tema": "El Redentor", "emoji": "🤝", "buscar": "Isaías 59", "pista": "Alguien vendrá a rescatar a Sion. Buscá en Isaías 59 el versículo que dice «Y vendrá a Sion el Redentor…».", "tarea": "Expliquen con sus palabras qué hace un redentor y de qué los puede rescatar Jesús a ustedes hoy."}, {"tema": "La luz", "emoji": "💡", "buscar": "Isaías 60", "pista": "Dios invita a levantarse. Buscá en Isaías 60 el versículo que empieza con «Levántate, resplandece…».", "tarea": "Anoten qué dos cosas nos pide Dios que hagamos y qué cosa ha nacido sobre nosotros. ¿Cómo puede un joven ser luz esta semana?"}, {"tema": "Ceniza por gloria", "emoji": "✨", "buscar": "Isaías 61", "pista": "Jesús leyó este pasaje en Nazaret. Buscá en Isaías 61 los versículos 1 al 3, donde algo triste se cambia por algo hermoso.", "tarea": "Hagan una lista de los cambios (X en lugar de Y) y elijan el que más le habla a su grupo para explicarlo en 1 minuto."}]}
   },
   {
     "id": "semana-6-antes-que-te-formase",
@@ -2423,12 +2423,24 @@ function renderSabadoOpciones(w, p) {
 
 /* ===== Clase domingo: pista por grupo + cronómetro ===== */
 let cdInterval = null;
+let cdAbrirTimer = null;
 function cdKey(w){ return 'cdState_' + w.id; }
 function cdLoad(w){ try { return JSON.parse(localStorage.getItem(cdKey(w)) || 'null'); } catch(e){ return null; } }
 function cdSave(w, st){ try { localStorage.setItem(cdKey(w), JSON.stringify(st)); } catch(e){} }
 function renderClaseDomingo(w){
   const card = document.getElementById('claseDomingoCard');
-  if (!w.claseDomingo) { card.hidden = true; if (cdInterval) clearInterval(cdInterval); return; }
+  // Se abre el domingo 18 de octubre a las 09:00 (hora local). En la versión de PRUEBA
+  // (dateReached siempre true) está abierto siempre.
+  const cdAbre = w.claseDomingo ? new Date(w.claseDomingo.abreAnio, w.claseDomingo.abreMes - 1, w.claseDomingo.abreDia, w.claseDomingo.abreHora, 0, 0) : null;
+  const cdEsPrueba = dateReached('2999-01-01');
+  const cdAbierto = !!cdAbre && (cdEsPrueba || Date.now() >= cdAbre.getTime());
+  if (cdAbre && !cdAbierto) {
+    // si la app ya está abierta, se destapa sola a la hora indicada
+    const ms = cdAbre.getTime() - Date.now();
+    if (cdAbrirTimer) clearTimeout(cdAbrirTimer);
+    if (ms < 36 * 3600000) cdAbrirTimer = setTimeout(() => { if (WEEKS[activeWeekIndex] === w) renderClaseDomingo(w); }, ms + 500);
+  }
+  if (!w.claseDomingo || !cdAbierto) { card.hidden = true; if (cdInterval) clearInterval(cdInterval); return; }
   card.hidden = false;
   const cd = w.claseDomingo;
   let st = cdLoad(w) || {};
