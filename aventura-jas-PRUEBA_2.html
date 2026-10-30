@@ -166,6 +166,11 @@
     padding: 6px 12px; font-size: 12.5px; cursor:pointer; color: var(--teal);
   }
 
+
+  .nov-p { font-size:14.5px; line-height:1.6; margin:0 0 12px; white-space:pre-line; }
+  .nov-chap-head { display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:10px; }
+  .nov-chap-head b { font-size:15px; }
+  .nov-pista { background:var(--lavender, #efe9f8); border-radius:12px; padding:10px 12px; font-size:13px; line-height:1.45; margin-top:6px; }
   .life-question {
     background: var(--teal); color: #fff; border-radius: 12px; padding: 14px 16px;
     font-family:'Fraunces',serif; font-size: 16px; font-weight:600; line-height:1.35; text-align:center;
@@ -443,6 +448,25 @@
         <button type="button" class="cta-btn secondary small" id="installBtn" hidden>Instalar la app →</button>
       </div>
 
+
+      <div class="card" id="retoCard" hidden>
+        <div class="section-title">🌅 Versículo y reto de esta semana</div>
+        <p style="font-size:15px; line-height:1.55; margin:0 0 4px; font-style:italic;">«…cambiaré su luto en gozo, y los consolaré, y los alegraré de su dolor.»</p>
+        <p style="font-size:12.5px; color:var(--muted); margin:0 0 12px;">Jeremías 31:13</p>
+        <p style="font-size:13.5px; font-weight:700; margin:0 0 6px;">Reto de 2 días · 5 minutos</p>
+        <ol style="font-size:13.5px; line-height:1.5; padding-left:20px; margin:0 0 10px;">
+          <li>Piensa en algo que hoy te pesa. No tienes que contárselo a nadie.</li>
+          <li>Díselo a Dios en una oración corta: «Esto es mío, ayúdame con esto».</li>
+          <li>Haz algo pequeño que dé gozo a ti o a otra persona.</li>
+        </ol>
+        <p style="font-size:12.5px; color:var(--muted); margin:0;">Es voluntario. Cuéntanos cómo te fue en el grupo o por privado. El domingo conversamos.</p>
+      </div>
+
+      <div class="card" id="novelaCard">
+        <div class="section-title">📖 Novela: Las preguntas de Sofi</div>
+        <p style="font-size:13.5px; line-height:1.5; margin:0 0 10px;">La historia de Pedro y Sofi. Un capítulo nuevo cada 3 días, ligado al tema de la semana.</p>
+        <button type="button" class="cta-btn" id="openNovelaBtn">Leer la novela →</button>
+      </div>
       <div class="card">
         <div class="section-title">Mapa de la aventura</div>
         <div class="map-track" id="mapTrack"></div>
@@ -680,6 +704,23 @@
 
         <button class="cta-btn" id="closeWeekBtn">Cerrar tu aventura de esta semana 🏅</button>
       </div>
+
+      <div class="card" id="claseDomingoCard" hidden>
+        <div class="section-title">📖 Clase domingo</div>
+        <p style="font-size:13px; line-height:1.45; margin:0 0 10px;">Elegí el número de grupo que te tocó en clase:</p>
+        <div id="cdGrupos" style="display:flex; gap:8px; margin-bottom:12px;"></div>
+        <button class="cta-btn" id="cdBuscarBtn" disabled>🔎 Busca la pista de tu grupo</button>
+        <div id="cdResultado" hidden style="margin-top:14px;">
+          <div id="cdTema" style="font-weight:700; font-size:15px; margin-bottom:6px;"></div>
+          <div id="cdPista" style="font-size:14px; line-height:1.5; margin-bottom:8px;"></div>
+          <div id="cdTarea" style="font-size:13px; line-height:1.45; color:var(--muted); margin-bottom:12px;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:11.5px; color:var(--muted);">Tiempo de búsqueda</div>
+            <div id="cdReloj" style="font-size:44px; font-weight:800; font-variant-numeric:tabular-nums;">7:00</div>
+            <div id="cdFin" style="font-weight:700; color:var(--terracotta);" hidden>⏰ ¡Tiempo! Prepárense para explicar.</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ============ BADGE REVEAL ============ -->
@@ -695,6 +736,19 @@
         </div>
       </div>
       <button class="cta-btn secondary" id="viewJournalFromBadgeBtn">Ver en mi Diario</button>
+    </div>
+
+
+    <!-- ============ NOVELA ============ -->
+    <div id="screenNovela" hidden>
+      <div class="backRow">
+        <button class="backBtn" id="backFromNovelaBtn">← Mapa</button>
+      </div>
+      <div class="weekHeader" style="margin-bottom:10px;">
+        <h1 style="margin-bottom:2px;">📖 Las preguntas de Sofi</h1>
+        <p class="principio" id="novelaSub"></p>
+      </div>
+      <div id="novelaList"></div>
     </div>
 
     <!-- ============ DIARIO PERSONAL ============ -->
@@ -1055,7 +1109,8 @@ const WEEKS = [
     "accionServicio": "Esta semana, ayuná con un propósito por alguien que lo necesite y llevale (o enviale) algo concreto: comida, un mensaje o tu tiempo. Isaías 58:7 lo dice claro: \"no te escondas de tu hermano\".",
     "preguntaCierre": "¿En cuál de los tres capítulos sentiste que Dios te habló más directamente esta semana?",
     "frasePararecordar": "\"Levántate, resplandece; porque ha venido tu luz, y la gloria de Jehová ha nacido sobre ti.\" (Isaías 60:1)",
-    "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria."
+    "testimonio": "El Redentor ya vino por ti, y todavía viene: donde hay ceniza, Él sabe poner gloria.",
+    "claseDomingo": {"abreAnio": 2026, "abreMes": 10, "abreDia": 18, "abreHora": 9, "minutos": 7, "orden": [2, 0, 3, 1], "pistas": [{"tema": "El ayuno", "emoji": "🍞", "buscar": "Isaías 58", "pista": "Dios dice cuál es el ayuno que Él escoge. Buscá en Isaías 58 el versículo que empieza con «¿No es más bien el ayuno que yo escogí…?»", "tarea": "Anoten qué 4 cosas se hacen con ese ayuno y piensen UNA acción concreta que su grupo puede hacer esta semana."}, {"tema": "El Redentor", "emoji": "🤝", "buscar": "Isaías 59", "pista": "Alguien vendrá a rescatar a Sion. Buscá en Isaías 59 el versículo que dice «Y vendrá a Sion el Redentor…».", "tarea": "Expliquen con sus palabras qué hace un redentor y de qué los puede rescatar Jesús a ustedes hoy."}, {"tema": "La luz", "emoji": "💡", "buscar": "Isaías 60", "pista": "Dios invita a levantarse. Buscá en Isaías 60 el versículo que empieza con «Levántate, resplandece…».", "tarea": "Anoten qué dos cosas nos pide Dios que hagamos y qué cosa ha nacido sobre nosotros. ¿Cómo puede un joven ser luz esta semana?"}, {"tema": "Ceniza por gloria", "emoji": "✨", "buscar": "Isaías 61", "pista": "Jesús leyó este pasaje en Nazaret. Buscá en Isaías 61 los versículos 1 al 3, donde algo triste se cambia por algo hermoso.", "tarea": "Hagan una lista de los cambios (X en lugar de Y) y elijan el que más le habla a su grupo para explicarlo en 1 minuto."}]}
   },
   {
     "id": "semana-6-antes-que-te-formase",
@@ -1309,6 +1364,7 @@ const screens = {
   week: document.getElementById('screenWeek'),
   badge: document.getElementById('screenBadge'),
   journal: document.getElementById('screenJournal'),
+  novela: document.getElementById('screenNovela'),
   admin: document.getElementById('screenAdmin'),
 };
 function showScreen(name) {
@@ -1621,29 +1677,34 @@ function weekHasEnded(dateStr){const e=parseLocalDate(dateStr);e.setDate(e.getDa
 function weekStatus(index) {
   const w = WEEKS[index];
   const p = weekProgress(w.id);
+  // Manda el calendario: la semana está abierta hasta su domingo. Desde el
+  // lunes siguiente se CIERRA para todos (hayan cumplido o no) y queda solo
+  // la semana actual para participar.
+  if (weekHasEnded(w.fechaInicio)) return 'closed';
   if (p.closingDone) return 'done';
-  // Sin candado por semana anterior: manda el calendario.
-  if (!p.activated && weekHasEnded(w.fechaInicio)) return 'expired';
   if (!dateReached(w.fechaInicio)) return 'scheduled';
   if (p.activated) return 'current';
   return 'ready';
 }
 
 function renderMap() {
+  if (typeof renderRetoCard === 'function') renderRetoCard();
   const track = document.getElementById('mapTrack');
   track.innerHTML = '';
   WEEKS.forEach((w, i) => {
     const status = weekStatus(i);
-    if (status === 'expired') return;
+    const p0 = weekProgress(w.id);
     const badge = getWeekBadge(i);
     const div = document.createElement('div');
-    div.className = 'map-week ' + status;
+    div.className = 'map-week ' + (status === 'closed' ? 'locked' : status);
     let dot = (i + 1);
-    if (status === 'done') dot = '✓';
+    if (status === 'closed') dot = p0.closingDone ? '✓' : '🔒';
+    else if (status === 'done') dot = '✓';
     else if (status === 'ready') dot = '▶';
     else if (status === 'scheduled') dot = '📅';
     let subText = 'Semana en curso — ¡vamos!';
-    if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
+    if (status === 'closed') subText = 'Semana cerrada';
+    else if (status === 'locked') subText = 'Se desbloquea al cerrar la semana anterior';
     else if (status === 'scheduled') subText = 'Disponible desde el ' + formatActivationEs(w.fechaInicio);
     else if (status === 'done') subText = badge.nombre;
     else if (status === 'ready') subText = 'Lista — falta que el administrador la active';
@@ -1654,7 +1715,7 @@ function renderMap() {
       '</div>' +
       '<div class="sub">' + subText + '</div>';
     div.addEventListener('click', () => {
-      if (status === 'locked' || status === 'scheduled') return;
+      if (status === 'closed' || status === 'locked' || status === 'scheduled') return;
       openWeek(i);
     });
     track.appendChild(div);
@@ -1666,7 +1727,7 @@ function renderMap() {
    ============================================================ */
 function openWeek(index) {
   const guardStatus = weekStatus(index);
-  if (guardStatus === 'locked' || guardStatus === 'scheduled') return;
+  if (guardStatus === 'closed' || guardStatus === 'locked' || guardStatus === 'scheduled') return;
 
   activeWeekIndex = index;
   const w = WEEKS[index];
@@ -1706,6 +1767,7 @@ function openWeek(index) {
   document.getElementById('closingQuestion').textContent = w.preguntaCierre;
   document.getElementById('rememberPhrase').textContent = w.frasePararecordar;
   renderSabadoOpciones(w, p);
+  renderClaseDomingo(w);
   renderEmojiRow(w.id);
   const jEntry = journal[w.id];
   document.getElementById('closingNote').value = (jEntry && jEntry.note) || '';
@@ -2397,6 +2459,90 @@ function renderSabadoOpciones(w, p) {
   });
 }
 
+
+/* ===== Clase domingo: pista por grupo + cronómetro ===== */
+let cdInterval = null;
+let cdAbrirTimer = null;
+function cdKey(w){ return 'cdState_' + w.id; }
+function cdLoad(w){ try { return JSON.parse(localStorage.getItem(cdKey(w)) || 'null'); } catch(e){ return null; } }
+function cdSave(w, st){ try { localStorage.setItem(cdKey(w), JSON.stringify(st)); } catch(e){} }
+function renderClaseDomingo(w){
+  const card = document.getElementById('claseDomingoCard');
+  // Se abre el domingo 18 de octubre a las 09:00 (hora local). En la versión de PRUEBA
+  // (dateReached siempre true) está abierto siempre.
+  const cdAbre = w.claseDomingo ? new Date(w.claseDomingo.abreAnio, w.claseDomingo.abreMes - 1, w.claseDomingo.abreDia, w.claseDomingo.abreHora, 0, 0) : null;
+  const cdEsPrueba = dateReached('2999-01-01');
+  const cdAbierto = !!cdAbre && (cdEsPrueba || Date.now() >= cdAbre.getTime());
+  if (cdAbre && !cdAbierto) {
+    // si la app ya está abierta, se destapa sola a la hora indicada
+    const ms = cdAbre.getTime() - Date.now();
+    if (cdAbrirTimer) clearTimeout(cdAbrirTimer);
+    if (ms < 36 * 3600000) cdAbrirTimer = setTimeout(() => { if (WEEKS[activeWeekIndex] === w) renderClaseDomingo(w); }, ms + 500);
+  }
+  if (!w.claseDomingo || !cdAbierto) { card.hidden = true; if (cdInterval) clearInterval(cdInterval); return; }
+  card.hidden = false;
+  const cd = w.claseDomingo;
+  let st = cdLoad(w) || {};
+  let sel = st.grupo || null;
+  const box = document.getElementById('cdGrupos');
+  const btn = document.getElementById('cdBuscarBtn');
+  box.innerHTML = '';
+  for (let g = 1; g <= cd.pistas.length; g++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = g;
+    b.dataset.g = g;
+    b.style.cssText = 'flex:1; padding:12px 0; font-size:20px; font-weight:800; border-radius:12px; border:2px solid var(--navy,#1f3a5f); background:#fff; color:var(--navy,#1f3a5f);';
+    b.addEventListener('click', () => {
+      sel = g;
+      paint();
+    });
+    box.appendChild(b);
+  }
+  function paint(){
+    box.querySelectorAll('button').forEach(b => {
+      const on = Number(b.dataset.g) === sel;
+      b.style.background = on ? 'var(--navy,#1f3a5f)' : '#fff';
+      b.style.color = on ? '#fff' : 'var(--navy,#1f3a5f)';
+    });
+    btn.disabled = !sel;
+  }
+  paint();
+  btn.onclick = () => {
+    if (!sel) return;
+    const prev = cdLoad(w);
+    // Si ya empezó con el mismo grupo, no se reinicia el reloj
+    const st2 = (prev && prev.grupo === sel && prev.fin) ? prev : { grupo: sel, fin: Date.now() + cd.minutos * 60000 };
+    cdSave(w, st2);
+    showPista(w, st2);
+  };
+  if (st.grupo && st.fin) showPista(w, st);
+  else document.getElementById('cdResultado').hidden = true;
+}
+function showPista(w, st){
+  const cd = w.claseDomingo;
+  const idx = cd.orden[(st.grupo - 1) % cd.orden.length] % cd.pistas.length;
+  const p = cd.pistas[idx];
+  document.getElementById('cdResultado').hidden = false;
+  document.getElementById('cdTema').textContent = p.emoji + ' Grupo ' + st.grupo + ' · ' + p.tema + ' — buscá en ' + p.buscar;
+  document.getElementById('cdPista').textContent = p.pista;
+  document.getElementById('cdTarea').textContent = '👉 ' + p.tarea;
+  if (cdInterval) clearInterval(cdInterval);
+  const reloj = document.getElementById('cdReloj'), fin = document.getElementById('cdFin');
+  function tick(){
+    const left = Math.max(0, Math.round((st.fin - Date.now()) / 1000));
+    reloj.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+    if (left <= 0) {
+      fin.hidden = false;
+      reloj.style.color = 'var(--terracotta)';
+      clearInterval(cdInterval); cdInterval = null;
+      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch(e){}
+    } else { fin.hidden = true; reloj.style.color = ''; }
+  }
+  tick();
+  if (st.fin > Date.now()) cdInterval = setInterval(tick, 500);
+}
+
 function renderIndividualOptions(w) {
   const list = document.getElementById('individualOptions');
   list.innerHTML = w.desafiosOpciones.map(o =>
@@ -3036,6 +3182,43 @@ function renderJournal() {
    NAVEGACIÓN GENERAL
    ============================================================ */
 document.getElementById('backToHomeBtn').addEventListener('click', () => { renderMap(); showScreen('home'); });
+
+/* ===== Novela: Las preguntas de Sofi ===== */
+const NOVELA = {"titulo": "Las preguntas de Sofi", "sub": "La historia de Pedro y Sofi · un capítulo nuevo cada 3 días", "capitulos": [{"n": 1, "titulo": "Las preguntas de Sofi", "fecha": "30 de octubre", "parrafos": ["Pedro llegó a casa a las 9:40 de la noche. Examen mañana, trabajo hasta las 6, el celular al 4%. Se dejó caer en la cama con la mochila todavía puesta.", "Tiene 22 años y toda la vida en la Iglesia. Abrió WhatsApp por costumbre: dos memes y un mensaje de Sofi.", "Sofi tiene 20 años y se bautizó hace dos semanas. Es la única de su familia en la Iglesia. Pedro fue quien la invitó, y por eso ahora es a quien ella le pregunta todo: sabe que él lleva toda la vida ahí.", "«Pedro, ¿puedo preguntarte algo? Es que no quiero molestar.»", "Sonrió, cansado. «Dale.»", "Los puntitos aparecieron y desaparecieron tres veces. Por fin llegó el mensaje:", "«En la Iglesia todos hablan de ser felices. Yo me sentí muy feliz el día que me bauticé. Pero estos días veo a casi todos cansados, a ti también. Entonces te pregunto: ¿cuándo fue la última vez que TÚ te sentiste feliz de verdad?»", "Pedro dejó el celular sobre el pecho. Se suponía que él, el de toda la vida en la Iglesia, era quien tenía las respuestas.", "Escribió: «La felicidad viene y va.» Lo borró.\nEscribió: «Es cuestión de seguir adelante.» Lo borró.", "Miró el techo.", "No lo recordaba."], "pregunta": "¿Qué le responderías tú a Sofi? Cuéntanos en el grupo o escríbele en privado a tu líder.", "pista": "Lee Jeremías 31:13 y fíjate en una palabra que aparece ahí y que no es «felicidad»."}], "proximo": "Capítulo 2 · lunes 2 de noviembre"};
+function renderNovela() {
+  document.getElementById('novelaSub').textContent = NOVELA.sub;
+  const list = document.getElementById('novelaList');
+  list.innerHTML = '';
+  const last = NOVELA.capitulos.length - 1;
+  NOVELA.capitulos.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const body = document.createElement('div');
+    body.hidden = i !== last;
+    body.innerHTML = c.parrafos.map(p => '<p class="nov-p">' + escapeHtml(p) + '</p>').join('') +
+      '<p class="nov-p" style="font-style:italic; color:var(--muted);">— Continuará —</p>' +
+      '<div class="life-question" style="margin-top:8px;">' + escapeHtml(c.pregunta) + '</div>' +
+      '<div class="nov-pista">💡 ' + escapeHtml(c.pista) + '</div>';
+    const head = document.createElement('div');
+    head.className = 'nov-chap-head';
+    head.innerHTML = '<div><div class="section-title" style="margin:0;">Capítulo ' + c.n + ' · ' + escapeHtml(c.fecha) + '</div><b>' + escapeHtml(c.titulo) + '</b></div><span>' + (i === last ? '▾' : '▸') + '</span>';
+    head.addEventListener('click', () => { body.hidden = !body.hidden; head.lastChild.textContent = body.hidden ? '▸' : '▾'; });
+    card.appendChild(head); card.appendChild(body); list.appendChild(card);
+  });
+  if (NOVELA.proximo) {
+    const nx = document.createElement('div');
+    nx.className = 'card';
+    nx.innerHTML = '<div class="section-title" style="margin:0 0 4px;">Próximamente</div><p style="margin:0; font-size:13.5px; color:var(--muted);">' + escapeHtml(NOVELA.proximo) + ' 👀</p>';
+    list.appendChild(nx);
+  }
+}
+function renderRetoCard() {
+  // El reto de 2 días solo se muestra hasta el domingo 1 de noviembre.
+  document.getElementById('retoCard').hidden = weekHasEnded('2026-10-26');
+}
+document.getElementById('openNovelaBtn').addEventListener('click', () => { renderNovela(); showScreen('novela'); });
+document.getElementById('backFromNovelaBtn').addEventListener('click', () => { renderMap(); showScreen('home'); });
+
 document.getElementById('openJournalBtn').addEventListener('click', () => { renderJournal(); showScreen('journal'); });
 document.getElementById('backFromJournalBtn').addEventListener('click', () => { renderMap(); showScreen('home'); });
 document.getElementById('backFromBadgeBtn').addEventListener('click', () => { renderMap(); showScreen('home'); });
